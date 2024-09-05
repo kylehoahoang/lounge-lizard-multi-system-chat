@@ -1,0 +1,19 @@
+[package]
+name = "design2_discord"
+version = "0.1.0"
+edition = "2021"
+build = "build.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+reqwest = { version = "0.12.7", features = ["blocking", "json"] }
+tokio-macros = "2.4.0"
+tokio = { version = "1.39.3", features = ["full"] }
+serde = { version = "1.0.209", features = ["derive"] }
+serde_json = "1.0.127"
+dotenv = "0.15.0"
+slint = "1.7.2"
+
+[build-dependencies]
+slint-build = "1.7.2"

@@ -1,0 +1,158 @@
+import { Button } from "std-widgets.slint";
+import { LoginWindow } from "src/ui/login.slint";
+
+export component MainWindow inherits Window {
+    // Set minimum and maximum sizes if needed
+    min_width: 800px;
+    min_height: 600px;
+    max_width: 1280px;
+    max_height: 720px;
+
+    title: "Discord App";
+
+    in property <[string]> server_names;
+    in property <[string]> server_ids;
+    in property <[string]> server_channels_names;
+    in property <[string]> server_channels_ids;
+    in property <[string]> channel_messages;
+    property <bool> show_login: true;
+
+    public function toggle_show_login() {
+        show_login = !show_login;
+    }
+
+    callback ServerButtonClicked(string);
+    callback ServerChannelButtonClicked(string);
+    callback process_login(string, string);
+
+
+    HorizontalLayout {
+        if show_login : LoginWindow{login_clicked(username, password) => {process_login(username, password)}}
+
+        // Sidebar
+        VerticalLayout {
+            width: 60px;
+            height: parent.height;
+
+            Rectangle {
+                width: parent.width;
+                height: parent.height;
+                background: #182954;
+
+                VerticalLayout {
+                    width: parent.width;
+                    height: parent.height;
+                    padding-left: 5px;
+                    padding-top: 5px;
+                    spacing: 5px;
+
+                    // First circle icon
+                    Rectangle {
+                        width: 50px;
+                        height: 50px;
+                        background: #ffa024;
+                        border-radius: 25px;
+                        Image {
+                            source: @image-url("assets/discord_logo.png");
+                            width: 70%;
+                            height: 70%;
+                        }
+                        animate x {
+                            duration: 250ms; easing: ease-in;
+                        }
+                    }
+
+                    // Second circle icon
+                    Rectangle {
+                        width: 50px;
+                        height: 50px;
+                        background: #ff6600;
+                        border-radius: 25px;
+                        Image {
+                            source: @image-url("assets/msteams_logo.png");
+                            width: 70%;
+                            height: 70%;
+                        }
+                    }
+
+                    // Third circle icon
+                    Rectangle {
+                        width: 50px;
+                        height: 50px;
+                        background: #ffa024;
+                        border-radius: 25px;
+                        Image {
+                            source: @image-url("assets/slack_logo.png");
+                            width: 70%;
+                            height: 70%;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Content area with server names
+        VerticalLayout {
+            width: 20%;
+            padding: 10px;
+            spacing: 5px;
+
+            // Display each server name in a text field
+            for server_name[i] in server_names: Text {
+                Rectangle {
+                    background: #363e52;
+                    Button {
+                        property <string> server_id: server_ids[i];
+                        text: server_name;
+
+                        clicked => {
+                            ServerButtonClicked(server_id)
+                        }
+                    }
+                }
+                    
+            }
+        }
+
+        // Content area with server names
+        VerticalLayout {
+            width: 20%;
+            padding: 10px;
+            spacing: 5px;
+
+            // Display each server name in a text field
+            for server_channel_name[i] in server_channels_names: Text {
+                Rectangle {
+                    background: #363e52;
+                    Button {
+                        property <string> server_channel_id: server_channels_ids[i];
+                        text: server_channel_name;
+
+                        clicked => {
+                            ServerChannelButtonClicked(server_channel_id)
+                        }
+                    }
+                }
+                    
+            }
+        }
+
+        VerticalLayout {
+            padding: 10px;
+            spacing: 5px;
+
+            // Display each server name in a text field
+            for channel_message[i] in channel_messages: Text {
+                Rectangle {
+                    height: 20px;
+                    background: #363e52;
+
+                    Text {
+                        text: channel_message;
+                    }
+                }
+                    
+            }
+        }
+    }
+}

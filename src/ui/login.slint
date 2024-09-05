@@ -1,0 +1,58 @@
+import { Button } from "std-widgets.slint";
+
+export component LoginWindow inherits Window {
+    title: "Login";
+    width: 400px;
+    height: 300px;
+
+    // Define properties for username and password input
+    property <string> username;
+    property <string> user_password;
+    in property <bool> is_loading;
+    
+    callback login_clicked(string, string);
+
+    VerticalLayout {
+        padding: 20px;
+
+        // Login Title
+        Text {
+            text: "Login";
+            font-size: 24px;
+        }
+
+        // Username Input
+        Rectangle {
+            width: parent.width;
+            height: 40px;
+            border-radius: 5px;
+
+            TextInput {
+                text: username;
+                edited => {username = self.text}
+            }
+        }
+
+        // Password Input
+        Rectangle {
+            width: parent.width;
+            height: 40px;
+            border-radius: 5px;
+
+            TextInput {
+                text: user_password;
+                input-type: password;
+                edited => {user_password = self.text}
+            }
+        }
+
+        // Login Button
+        Button {
+            text: "Login";
+
+            clicked => {
+                login_clicked(username, user_password);
+            }
+        }
+    }
+}
