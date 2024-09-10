@@ -16,19 +16,36 @@ export component MainWindow inherits Window {
     in property <[string]> server_channels_ids;
     in property <[string]> channel_messages;
     property <bool> show_login: true;
+    property <string> chat_message;
+    property <string> current_channel_id;
+    property <length> login_screen_pos : 0px;
 
     public function toggle_show_login() {
         show_login = !show_login;
+        login_screen_pos = -400px;
     }
 
     callback ServerButtonClicked(string);
     callback ServerChannelButtonClicked(string);
     callback process_login(string, string);
+    callback send_message(string, string);
 
+    Rectangle {
+        width: 400px;
+        x: login_screen_pos;
+        z: 1;
+        background: orange;
+
+        animate x {
+            duration: 1000ms;
+            easing: ease-in-out;
+        }
+
+
+        if show_login : LoginWindow{login_clicked(username, password) => {process_login(username, password)}}
+    }
 
     HorizontalLayout {
-        if show_login : LoginWindow{login_clicked(username, password) => {process_login(username, password)}}
-
         // Sidebar
         VerticalLayout {
             width: 60px;
@@ -56,9 +73,6 @@ export component MainWindow inherits Window {
                             source: @image-url("assets/discord_logo.png");
                             width: 70%;
                             height: 70%;
-                        }
-                        animate x {
-                            duration: 250ms; easing: ease-in;
                         }
                     }
 
@@ -129,6 +143,7 @@ export component MainWindow inherits Window {
                         text: server_channel_name;
 
                         clicked => {
+                            current_channel_id = server_channel_id;
                             ServerChannelButtonClicked(server_channel_id)
                         }
                     }
@@ -139,19 +154,57 @@ export component MainWindow inherits Window {
 
         VerticalLayout {
             padding: 10px;
+            height: parent.height;
             spacing: 5px;
 
-            // Display each server name in a text field
-            for channel_message[i] in channel_messages: Text {
-                Rectangle {
-                    height: 20px;
-                    background: #363e52;
+            Text {
+                text: "Messages";
+                color: white;
+                font-size: 18px;
+            }
 
-                    Text {
-                        text: channel_message;
+            Flickable {
+                height: parent.height - 150px;
+            
+                // The inner content that is scrollable
+                VerticalLayout {
+                    padding: 10px;
+                    spacing: 5px;
+            
+                    // Iterate over the messages and display them
+                    for channel_message[i] in channel_messages: Text {
+                        Rectangle {
+                            height: 20px;
+                            background: #363e52;
+            
+                            Text {
+                                text: channel_message;
+                            }
+                        }
                     }
                 }
-                    
+            }
+
+             // Message input and send button section
+             HorizontalLayout {
+                height: 50px;
+                spacing: 10px;
+
+                // Text input for the message
+                TextInput {
+                    width: 80%;   // Adjust width for the input box
+                    text: "Type your message...";
+                    edited => {chat_message = self.text}
+                }
+
+                // Send button
+                Button {
+                    text: "Send";
+                    clicked => {
+                        // Trigger send message callback with input text
+                        send_message(current_channel_id, chat_message);
+                    }
+                }
             }
         }
     }

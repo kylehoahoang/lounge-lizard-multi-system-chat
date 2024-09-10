@@ -239,6 +239,57 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         });
     });
 
+    // Set up event handler for sending a message
+    let token_clone = token.clone();
+    let ui_handle_clone = ui_handle.clone();
+    ui.on_send_message(move |channel_id, message| {
+        let token = token_clone.lock().unwrap().clone(); // Access the token
+        let channel_id = channel_id.clone();
+        let message = message.clone();
+        let ui_handle = ui_handle_clone.clone();
+        println!("channel id selected:\n{}", channel_id);
+        println!("message to send:\n{}", message);
+
+        slint::spawn_local(async move {
+            if let Some(ui) = ui_handle.upgrade() {
+                match send_message(&token.as_deref().unwrap(), &channel_id, &message).await {
+                    Ok(channel_messages) => {
+                        println!("Send Messages Response:\n{}", channel_messages);
+                        // let channel_messages_text: Vec<SharedString> = channel_messages
+                        //     .as_array()
+                        //     .unwrap_or(&vec![])
+                        //     .iter()
+                        //     .map(|messages| SharedString::from(messages["content"].as_str().unwrap_or("")))
+                        //     .collect();
+                        // ui.set_channel_messages(
+                        //     slint::ModelRc::new(slint::VecModel::from(channel_messages_text))
+                        // );
+                    }
+                    Err(e) => eprintln!("Error: {}", e),
+                }
+
+                // Updates messages (full reload for now)
+                match get_messages(&token.as_deref().unwrap(), &channel_id).await {
+                    Ok(channel_messages) => {
+                        println!("Get Messages Response:\n{}", channel_messages);
+                        let channel_messages_text: Vec<SharedString> = channel_messages
+                            .as_array()
+                            .unwrap_or(&vec![])
+                            .iter()
+                            .map(|messages| SharedString::from(messages["content"].as_str().unwrap_or("")))
+                            .collect();
+                        ui.set_channel_messages(
+                            slint::ModelRc::new(slint::VecModel::from(channel_messages_text))
+                        );
+                    }
+                    Err(e) => eprintln!("Error: {}", e),
+                }
+            } else {
+                eprintln!("UI handle has been lost");
+            }
+        });
+    });
+
 
 
     let token_clone = token.clone();
