@@ -1,19 +1,13 @@
 import { Button } from "std-widgets.slint";
 
 export component LoginWindow inherits Window {
-    title: "Login";
     width: 400px;
     height: 300px;
-    // Animate the x property for smooth sliding
-    animate x { 
-        duration: 300ms;
-        easing: ease-in-out;
-    }
 
     // Define properties for username and password input
     property <string> username;
     property <string> user_password;
-    in property <bool> is_loading;
+    in-out property <bool> is_loading: false;
     
     callback login_clicked(string, string);
 
@@ -23,8 +17,14 @@ export component LoginWindow inherits Window {
 
         // Login Title
         Text {
-            text: "Login";
+            text: "Discord Login";
             font-size: 24px;
+            font-weight: 800;
+        }
+
+        Text {
+            text: "Username/Email";
+            font-size: 16px;
         }
 
         // Username Input
@@ -35,10 +35,18 @@ export component LoginWindow inherits Window {
             background: #ecf0f1;
 
             TextInput {
-                text: "Enter your username/email";
+                text: "john.doe@email.com";
                 color: gray;
                 edited => {username = self.text}
+                vertical-alignment: center;
+                x: 10px;
+                width: parent.width - 10px;
             }
+        }
+
+        Text {
+            text: "Password";
+            font-size: 16px;
         }
 
         // Password Input
@@ -53,16 +61,33 @@ export component LoginWindow inherits Window {
                 input-type: password;
                 color: gray;
                 edited => {user_password = self.text}
+                vertical-alignment: center;
+                x: 10px;
+                width: parent.width - 10px;
             }
         }
 
         // Login Button
-        Button {
-            text: "Login";
+        Rectangle {
+            width: 100px;
+            height: 50px;
+            background: #404468;
+            border-radius: 10px;
 
-            clicked => {
-                login_clicked(username, user_password);
+            Button {
+                text: "Login";
+                width: parent.width;
+                height: parent.height;
+    
+                clicked => {
+                    if (!is_loading)
+                    {
+                        is_loading = true;
+                        login_clicked(username, user_password);
+                    }
+                }
             }
         }
+        
     }
 }

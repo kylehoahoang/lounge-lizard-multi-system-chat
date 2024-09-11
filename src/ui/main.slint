@@ -2,27 +2,38 @@ import { Button } from "std-widgets.slint";
 import { LoginWindow } from "src/ui/login.slint";
 
 export component MainWindow inherits Window {
-    // Set minimum and maximum sizes if needed
-    min_width: 800px;
-    min_height: 600px;
-    max_width: 1280px;
-    max_height: 720px;
+    // Set minimum and maximum sizes of window
+    min_width: 1024px;
+    min_height: 576px;
+    max_width: 1920px;
+    max_height: 1080px;
 
-    title: "Discord App";
+    // Set the application icon and name
+    title: "Lounge Lizard Multi-Chat";
+    icon: @image-url("assets/loungelizard.png");
 
     in property <[string]> server_names;
     in property <[string]> server_ids;
     in property <[string]> server_channels_names;
     in property <[string]> server_channels_ids;
     in property <[string]> channel_messages;
-    property <bool> show_login: true;
+    property <bool> show_login: false;
     property <string> chat_message;
     property <string> current_channel_id;
     property <length> login_screen_pos : 0px;
+    property <float> login_opacity: 0.0;
 
     public function toggle_show_login() {
         show_login = !show_login;
-        login_screen_pos = -400px;
+        if (show_login) {
+            login_screen_pos = 400px;
+            login_opacity = 1.0;
+        }
+        else {
+            login_screen_pos = 0px;
+            login_opacity = 0.0;
+        }
+        
     }
 
     callback ServerButtonClicked(string);
@@ -32,17 +43,33 @@ export component MainWindow inherits Window {
 
     Rectangle {
         width: 400px;
-        x: login_screen_pos;
+        x: parent.width - login_screen_pos;
         z: 1;
         background: orange;
+        
 
         animate x {
-            duration: 1000ms;
+            duration: 800ms;
             easing: ease-in-out;
         }
 
+        // Animate the opacity for fade-in
+        opacity: login_opacity;
+        animate opacity { 
+            duration: 700ms;
+            easing: ease-in-out;
+        }
 
-        if show_login : LoginWindow{login_clicked(username, password) => {process_login(username, password)}}
+        
+        // if show_login : 
+        LoginWindow{
+            login_clicked(username, password) => {
+                if (!show_login) {
+                    self.is_loading = false;
+                }
+                process_login(username, password)
+            }
+        }
     }
 
     HorizontalLayout {
@@ -74,6 +101,14 @@ export component MainWindow inherits Window {
                             width: 70%;
                             height: 70%;
                         }
+                        touch-area:= TouchArea {
+                            width: parent.width;
+                            height: parent.height;
+                            clicked => {
+                                toggle_show_login();
+                            }
+                        }
+                        
                     }
 
                     // Second circle icon
@@ -82,6 +117,9 @@ export component MainWindow inherits Window {
                         height: 50px;
                         background: #ff6600;
                         border-radius: 25px;
+                        Button {
+                            
+                        }
                         Image {
                             source: @image-url("assets/msteams_logo.png");
                             width: 70%;
@@ -106,7 +144,7 @@ export component MainWindow inherits Window {
         }
 
         // Content area with server names
-        VerticalLayout {
+        if !show_login: VerticalLayout {
             width: 20%;
             padding: 10px;
             spacing: 5px;
@@ -129,7 +167,7 @@ export component MainWindow inherits Window {
         }
 
         // Content area with server names
-        VerticalLayout {
+        if !show_login: VerticalLayout {
             width: 20%;
             padding: 10px;
             spacing: 5px;
@@ -152,7 +190,7 @@ export component MainWindow inherits Window {
             }
         }
 
-        VerticalLayout {
+        if !show_login: VerticalLayout {
             padding: 10px;
             height: parent.height;
             spacing: 5px;
