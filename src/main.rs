@@ -312,6 +312,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         }
                         Err(e) => {
                             eprintln!("Error: {}", e);
+                            ui.invoke_unsuccessful_login();
                             return; // Ensure return type is consistent
                         }
                     };
@@ -361,7 +362,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     // Set the server names in the UI
                     ui.set_server_names(slint::ModelRc::new(slint::VecModel::from(server_names)));
                     ui.set_server_ids(slint::ModelRc::new(slint::VecModel::from(server_ids)));
-                    ui.invoke_toggle_show_login();
+                    ui.invoke_successful_login();
                 } else {
                     eprintln!("UI handle has been lost");
                 }

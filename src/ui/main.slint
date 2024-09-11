@@ -22,6 +22,20 @@ export component MainWindow inherits Window {
     property <string> current_channel_id;
     property <length> login_screen_pos : 0px;
     property <float> login_opacity: 0.0;
+    property <bool> is_logged_in: false;
+    property <bool> login_error: false;
+    property <bool> login_loading: false;
+
+    public function successful_login() {
+        toggle_show_login();
+        is_logged_in = true;
+        login_loading = false;
+    }
+
+    public function unsuccessful_login() {
+        login_error = true;
+        login_loading = false;
+    }
 
     public function toggle_show_login() {
         show_login = !show_login;
@@ -64,11 +78,18 @@ export component MainWindow inherits Window {
         // if show_login : 
         LoginWindow{
             login_clicked(username, password) => {
-                if (!show_login) {
-                    self.is_loading = false;
+                if (!login_loading)
+                {
+                    login_loading = true;
+                    process_login(username, password)
                 }
-                process_login(username, password)
             }
+        }
+
+        Rectangle {
+            width: 40px;
+            height: 40px;
+            background: white;
         }
     }
 
@@ -144,7 +165,7 @@ export component MainWindow inherits Window {
         }
 
         // Content area with server names
-        if !show_login: VerticalLayout {
+        if is_logged_in: VerticalLayout {
             width: 20%;
             padding: 10px;
             spacing: 5px;
@@ -153,9 +174,12 @@ export component MainWindow inherits Window {
             for server_name[i] in server_names: Text {
                 Rectangle {
                     background: #363e52;
+                    height: 40px;
                     Button {
                         property <string> server_id: server_ids[i];
                         text: server_name;
+                        width: parent.width;
+                        height: parent.height;
 
                         clicked => {
                             ServerButtonClicked(server_id)
@@ -167,7 +191,7 @@ export component MainWindow inherits Window {
         }
 
         // Content area with server names
-        if !show_login: VerticalLayout {
+        if is_logged_in: VerticalLayout {
             width: 20%;
             padding: 10px;
             spacing: 5px;
@@ -190,7 +214,7 @@ export component MainWindow inherits Window {
             }
         }
 
-        if !show_login: VerticalLayout {
+        if is_logged_in: VerticalLayout {
             padding: 10px;
             height: parent.height;
             spacing: 5px;

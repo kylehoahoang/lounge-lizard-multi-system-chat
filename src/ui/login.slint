@@ -7,7 +7,7 @@ export component LoginWindow inherits Window {
     // Define properties for username and password input
     property <string> username;
     property <string> user_password;
-    in-out property <bool> is_loading: false;
+    in-out property <string> button_text: "Login";
     
     callback login_clicked(string, string);
 
@@ -75,16 +75,12 @@ export component LoginWindow inherits Window {
             border-radius: 10px;
 
             Button {
-                text: "Login";
+                text: button_text;
                 width: parent.width;
                 height: parent.height;
     
                 clicked => {
-                    if (!is_loading)
-                    {
-                        is_loading = true;
-                        login_clicked(username, user_password);
-                    }
+                    login_clicked(username, user_password);
                 }
             }
         }
