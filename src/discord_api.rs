@@ -109,6 +109,8 @@ pub async fn send_message(token: &str, channel_id: &str, message: &str) -> Resul
 pub async fn get_messages(token: &str, channel_id: &str) -> Result<Value, Box<dyn Error>> {
     let client = Client::new();
     let url = format!("https://discord.com/api/v9/channels/{}/messages", channel_id);
+    
+    println!("in get messages");
 
     let response = client
         .get(&url)

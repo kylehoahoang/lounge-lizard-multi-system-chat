@@ -75,7 +75,6 @@ export component MainWindow inherits Window {
         }
 
         
-        // if show_login : 
         LoginWindow{
             login_clicked(username, password) => {
                 if (!login_loading)
@@ -165,32 +164,38 @@ export component MainWindow inherits Window {
         }
 
         // Content area with server names
-        if is_logged_in: VerticalLayout {
-            width: 20%;
-            padding: 10px;
-            spacing: 5px;
+        if is_logged_in: Flickable {
+            width: 30%;
+            height: parent.height;
+            padding-left: 5px;
+            
 
-            // Display each server name in a text field
-            for server_name[i] in server_names: Text {
-                Rectangle {
-                    background: #363e52;
-                    height: 40px;
-                    Button {
-                        property <string> server_id: server_ids[i];
-                        text: server_name;
-                        width: parent.width;
-                        height: parent.height;
+            VerticalLayout {
+                width: parent.width;
+                spacing: 2px;
 
-                        clicked => {
-                            ServerButtonClicked(server_id)
+                // Display each server name in a text field
+                for server_name[i] in server_names: Text {
+                    Rectangle {
+                        background: #363e52;
+                        height: 50px;
+                        Button {
+                            property <string> server_id: server_ids[i];
+                            text: server_name;
+                            width: parent.width;
+                            height: 100%;
+
+                            clicked => {
+                                ServerButtonClicked(server_id)
+                            }
                         }
                     }
                 }
-                    
+
             }
         }
 
-        // Content area with server names
+        // Content area with server channel names
         if is_logged_in: VerticalLayout {
             width: 20%;
             padding: 10px;
