@@ -1,0 +1,55 @@
+body {
+  background-color: #111216;
+  overflow: hidden;
+}
+
+.main-container {
+  display: flex;
+  height: 100vh;
+}
+
+.vertical-bar {
+  height: calc(100vh - 40px);
+  width: 80px;
+  background-color: #2c2f33;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 2px;
+  border-radius: 10px;
+  padding-top: 20px;
+}
+
+.login-pane {
+  position: fixed;
+  top: 0;
+  right: -420px; /* Initially off-screen */
+  width: 400px;
+  height: 100%;
+  background-color: rgb(43, 45, 78);
+  transition: right 0.5s ease-in-out;
+  z-index: 1000;
+  padding-left: 20px;
+}
+
+.login-pane.show {
+  right: 0; /* Slide in */
+}
+
+.bottom-pane {
+  position: fixed;
+  bottom: -100%; /* Initially off-screen */
+  left: 100px; /* Width of the left bar, adjust as necessary */
+  width: calc(100% - 110px); /* Full width minus left bar */
+  height: calc(100% - 10px); /* Adjust height based on your header height */
+  background-color: #404a57; /* Background color */
+  transition: bottom 0.5s ease-in-out; /* Slide transition */
+  z-index: 999; /* Layer on top */
+  overflow-y: auto; /* Enable vertical scrolling */
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.bottom-pane.show {
+  bottom: 0; /* Slide in */
+}

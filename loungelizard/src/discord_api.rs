@@ -2,6 +2,7 @@ use reqwest::Client;
 use reqwest::header::{AUTHORIZATION, HeaderValue};
 use serde_json::Value;
 use std::error::Error;
+use std::time::Duration;
 
 // FUNCTION: Sends login to Discord and returns auth token and user id
 pub async fn login_request(username: String, password: String) -> Result<(String, String), Box<dyn Error>> {
@@ -48,12 +49,12 @@ pub async fn get_channels(token: &str) -> Result<Value, Box<dyn Error>> {
 }
 
 // FUNCTION: Gets user's servers (guilds)
-pub async fn get_guilds(token: &str) -> Result<Value, Box<dyn Error>> {
+pub async fn get_guilds(token: String) -> Result<Value, Box<dyn Error>> {
     let client = Client::new();
 
     let response = client
         .get("https://discord.com/api/v9/users/@me/guilds")
-        .header(AUTHORIZATION, HeaderValue::from_str(token)?)
+        .header(AUTHORIZATION, HeaderValue::from_str(&token)?)
         .send()
         .await?;
 
@@ -107,7 +108,9 @@ pub async fn send_message(token: &str, channel_id: &str, message: &str) -> Resul
 
 // FUNCTION: Get messages from a channel
 pub async fn get_messages(token: &str, channel_id: &str) -> Result<Value, Box<dyn Error>> {
-    let client = Client::new();
+    let client = Client::builder()
+    .timeout(Duration::from_secs(2)) // Set a 2-second timeout
+    .build()?;
     let url = format!("https://discord.com/api/v9/channels/{}/messages", channel_id);
     
     println!("in get messages");
@@ -119,6 +122,7 @@ pub async fn get_messages(token: &str, channel_id: &str) -> Result<Value, Box<dy
         .await?;
 
     if response.status().is_success() {
+        println!("response success");
         let response_json = response.json().await?;
         Ok(response_json)
     } else {
