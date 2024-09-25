@@ -86,14 +86,14 @@ pub async fn get_guild_channels(token: String, guild_id: String) -> Result<Value
 }
 
 // FUNCTION: Sends message to a server channel
-pub async fn send_message(token: &str, channel_id: &str, message: &str) -> Result<Value, Box<dyn Error>> {
+pub async fn send_message(token: String, channel_id: String, message: String) -> Result<Value, Box<dyn Error>> {
     let client = Client::new();
     let url = format!("https://discord.com/api/v9/channels/{}/messages", channel_id);
     let body = serde_json::json!({ "content": message });
 
     let response = client
         .post(&url)
-        .header(AUTHORIZATION, HeaderValue::from_str(token)?)
+        .header(AUTHORIZATION, HeaderValue::from_str(&token)?)
         .json(&body)
         .send()
         .await?;
@@ -107,7 +107,7 @@ pub async fn send_message(token: &str, channel_id: &str, message: &str) -> Resul
 }
 
 // FUNCTION: Get messages from a channel
-pub async fn get_messages(token: &str, channel_id: &str) -> Result<Value, Box<dyn Error>> {
+pub async fn get_messages(token: String, channel_id: String) -> Result<Value, Box<dyn Error>> {
     let client = Client::builder()
     .timeout(Duration::from_secs(2)) // Set a 2-second timeout
     .build()?;
@@ -117,7 +117,7 @@ pub async fn get_messages(token: &str, channel_id: &str) -> Result<Value, Box<dy
 
     let response = client
         .get(&url)
-        .header(AUTHORIZATION, HeaderValue::from_str(token)?)
+        .header(AUTHORIZATION, HeaderValue::from_str(&token)?)
         .send()
         .await?;
 

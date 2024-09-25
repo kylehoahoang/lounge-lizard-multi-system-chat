@@ -28,7 +28,7 @@ body {
   height: 100%;
   background-color: rgb(43, 45, 78);
   transition: right 0.5s ease-in-out;
-  z-index: 1000;
+  z-index: 1002;
   padding-left: 20px;
 }
 
@@ -72,5 +72,91 @@ body {
 }
 
 .guild-button:hover {
+  background-color: #5b6eae;
+}
+
+.channel-list-pane {
+  position: fixed;
+  bottom: -100%; /* Start off-screen at the bottom */
+  left: 100px;
+  width: calc(100% - 110px);
+  height: calc(100% - 20px); /* Adjust height as necessary */
+  overflow-y: auto;
+  background-color: #282c34; /* Dark background for pane */
+  color: white;
+  transition: bottom 0.5s ease-in-out, opacity 0.4s ease-in-out;
+  opacity: 0; /* Fully transparent when hidden */
+  z-index: 1000;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+/* When the pane is shown, slide it up */
+.channel-list-pane.show {
+  bottom: 0; /* Move into view */
+  opacity: 1; /* Fully visible */
+}
+
+.channel-list {
+  list-style-type: none; /* This removes the bullet points */
+  padding: 5px;
+}
+
+.channel-button {
+  background-color: #7289da;
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  margin: 5px 0;
+  width: 100%;
+  text-align: left;
+  border-radius: 10px;
+}
+
+.channel-button:hover {
+  background-color: #5b6eae;
+}
+
+.channel-messages-list-pane {
+  position: fixed;
+  bottom: -100%; /* Start off-screen at the bottom */
+  left: 100px;
+  width: calc(100% - 110px);
+  height: calc(100% - 20px); /* Adjust height as necessary */
+  overflow-y: auto;
+  background-color: #282c34; /* Dark background for pane */
+  color: white;
+  transition: bottom 0.5s ease-in-out, opacity 0.4s ease-in-out;
+  opacity: 0; /* Fully transparent when hidden */
+  z-index: 1001;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+/* When the pane is shown, slide it up */
+.channel-messages-list-pane.show {
+  bottom: 0; /* Move into view */
+  opacity: 1; /* Fully visible */
+}
+
+.messages-list {
+  list-style-type: none; /* This removes the bullet points */
+  padding: 5px;
+}
+
+.messages-button {
+  background-color: #7289da;
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  margin: 5px 0;
+  width: 100%;
+  text-align: left;
+  border-radius: 10px;
+}
+
+.messages-button:hover {
   background-color: #5b6eae;
 }
