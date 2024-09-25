@@ -67,13 +67,13 @@ pub async fn get_guilds(token: String) -> Result<Value, Box<dyn Error>> {
 }
 
 // FUNCTION: Get server channels
-pub async fn get_guild_channels(token: &str, guild_id: &str) -> Result<Value, Box<dyn Error>> {
+pub async fn get_guild_channels(token: String, guild_id: String) -> Result<Value, Box<dyn Error>> {
     let client = Client::new();
     let url = format!("https://discord.com/api/v9/guilds/{}/channels", guild_id);
 
     let response = client
         .get(&url)
-        .header(AUTHORIZATION, HeaderValue::from_str(token)?)
+        .header(AUTHORIZATION, HeaderValue::from_str(&token)?)
         .send()
         .await?;
 

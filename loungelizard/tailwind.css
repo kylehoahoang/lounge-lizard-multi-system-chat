@@ -53,3 +53,24 @@ body {
 .bottom-pane.show {
   bottom: 0; /* Slide in */
 }
+
+.guild-list {
+  list-style-type: none; /* This removes the bullet points */
+  padding: 5px;
+}
+
+.guild-button {
+  background-color: #7289da;
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  margin: 5px 0;
+  width: 100%;
+  text-align: left;
+  border-radius: 10px;
+}
+
+.guild-button:hover {
+  background-color: #5b6eae;
+}
