@@ -8,6 +8,7 @@ use futures::executor::block_on;
 use serde_json::Value;
 use tokio::time;
 use futures_util::StreamExt;
+use chrono::{DateTime, Utc, NaiveDateTime};
 
 
 #[derive(Clone, Routable, Debug, PartialEq)]
@@ -56,13 +57,18 @@ fn Home() -> Element {
             // Left vertical bar
             div {
                 class: "vertical-bar",
-                img {
-                    src: "assets/discord_logo.png",
-                    alt: "Discord Logo",
-                    width: "50px",
-                    height: "50px",
-                    style: "cursor: pointer;",
-                    onclick: handle_discord_click,
+                div {
+                    class: {
+                        format_args!("white-square {}", if show_discord_login_pane() || show_discord_server_pane() { "opaque" } else { "transparent" })
+                    },
+                    img {
+                        src: "assets/discord_logo.png",
+                        alt: "Discord Logo",
+                        width: "50px",
+                        height: "50px",
+                        style: "cursor: pointer;",
+                        onclick: handle_discord_click,
+                    }
                 }
             }
 
@@ -332,7 +338,7 @@ struct EmptyStruct {} // Empty struct to use for coroutines (when you don't need
 #[component]
 fn ChannelMessages(discord_token: Signal<String>, messages: Signal<Option<Value>>, show_channel_messages_pane: Signal<bool>, current_channel_id: Signal<String>,  show_discord_server_pane: Signal<bool>) -> Element {
     let mut send_error = use_signal(|| None::<String>);
-    let mut message_input = use_signal(|| "Enter your message here. ".to_string());
+    let mut message_input = use_signal(|| "".to_string());
 
     let handle_send_message = move |_| {
         block_on(async move {
@@ -415,6 +421,17 @@ fn ChannelMessages(discord_token: Signal<String>, messages: Signal<Option<Value>
                     for message in messages_data.as_array().unwrap_or(&vec![]) {
                         li {
                             class: "messages-item",
+                            div {
+                                class: "message-header",
+                                span {
+                                    class: "message-username",
+                                    {message["author"]["username"].as_str().unwrap_or("Unknown User")}
+                                }
+                                span {
+                                    class: "message-date",
+                                    {format_timestamp(message["timestamp"].as_str().unwrap_or(""))}
+                                }
+                            }
                             button {
                                 class: "messages-button",
                                 {message["content"].as_str().unwrap_or("Failed to display message.")}
@@ -427,14 +444,23 @@ fn ChannelMessages(discord_token: Signal<String>, messages: Signal<Option<Value>
                     input {
                         class: "message-input-box",
                         value: "{message_input}",
+                        placeholder: "Enter your message.",
                         oninput: move |event| message_input.set(event.value())
                     }
                     button {  
                         class: "send-button", 
-                        onclick: handle_send_message, "Send message" 
+                        onclick: handle_send_message, "Send" 
                     }
                 }
             }
         }
     }
+}
+
+fn format_timestamp(timestamp: &str) -> String {
+    // Parse the timestamp string into a DateTime object
+    let parsed_timestamp = DateTime::parse_from_rfc3339(timestamp).unwrap_or_else(|_| Utc::now().into());
+    
+    // Format the date into a readable format, e.g., "Sep 26, 2024 12:45 PM"
+    parsed_timestamp.format("%b %d, %Y %I:%M %p").to_string()
 }
