@@ -22,7 +22,7 @@ fn main() {
     info!("starting app");
 
     let cfg = dioxus::desktop::Config::new()
-        .with_custom_head(r#"<link rel="stylesheet" href="tailwind.css">"#.to_string());
+        .with_custom_head(r#"<link rel="stylesheet" href="/assets/tailwind.css">"#.to_string());
     LaunchBuilder::desktop().with_cfg(cfg).launch(App);
 }
 
@@ -70,17 +70,8 @@ fn Home() -> Element {
             div {
                 class: "main-content",
 
-                h2 { 
-                    style: "
-                        font-family: Arial Black; 
-                        color: #F5F5F5; 
-                        background: rgba(0, 0, 0, 0.25); 
-                        padding: 15px; 
-                        border-radius: 5px;
-                        position: absolute; 
-                        top: -18px; 
-                        left: 15px;
-                    ", 
+                h1 { 
+                    class: "welcome-message", 
                     "welcome back to lounge lizard" 
                 }
 
@@ -112,8 +103,8 @@ fn Home() -> Element {
 
 #[component]
 fn DiscordLogin(show_login_pane: Signal<bool>, show_discord_login_pane: Signal<bool>, show_discord_server_pane: Signal<bool>, discord_token: Signal<String>, discord_guilds: Signal<Value>) -> Element {
-    let mut username = use_signal(|| "example@gmail.com".to_string());
-    let mut password = use_signal(|| "password".to_string());
+    let mut username = use_signal(|| "".to_string());
+    let mut password = use_signal(|| "".to_string());
 
     let mut login_error = use_signal(|| None::<String>);
 
@@ -171,7 +162,7 @@ fn DiscordLogin(show_login_pane: Signal<bool>, show_discord_login_pane: Signal<b
                     path {
                         d: "M18 6 L6 18 M6 6 L18 18", // This path describes a close icon (X)
                         fill: "none",
-                        stroke: "white", // Change stroke color as needed
+                        stroke: "#f5f5f5", // Change stroke color as needed
                         stroke_width: "2" // Adjust stroke width
                     }
                 }
@@ -179,12 +170,14 @@ fn DiscordLogin(show_login_pane: Signal<bool>, show_discord_login_pane: Signal<b
             input {
                 class: "login-input",
                 value: "{username}",
+                placeholder: "Username/Email",
                 oninput: move |event| username.set(event.value())
             }
             input {
                 class: "login-input",
                 r#type: "password",
                 value: "{password}",
+                placeholder: "Password",
                 oninput: move |event| password.set(event.value())
             }
             button { 
@@ -292,9 +285,20 @@ fn ChannelList(discord_token: Signal<String>, channels: Signal<Option<Value>>, s
             },
             h2 { "Channels" }
             button {
-                style: "position: absolute; top: 10px; right: 10px; background-color: transparent; color: white;",
-                onclick: move |_| show_channel_pane.set(false),
-                "X"
+                style: "position: absolute; top: 10px; right: 10px; background-color: transparent; border: none; cursor: pointer;",
+                onclick: move |_| { show_channel_pane.set(false);},
+                svg {
+                    xmlns: "http://www.w3.org/2000/svg",
+                    view_box: "0 0 24 24",
+                    width: "30", // Adjust size as needed
+                    height: "30", // Adjust size as needed
+                    path {
+                        d: "M18 6 L6 18 M6 6 L18 18", // This path describes a close icon (X)
+                        fill: "none",
+                        stroke: "#f5f5f5", // Change stroke color as needed
+                        stroke_width: "2" // Adjust stroke width
+                    }
+                }
             }
             if !channels()?.is_null() {
                 ul {
@@ -390,9 +394,20 @@ fn ChannelMessages(discord_token: Signal<String>, messages: Signal<Option<Value>
             },
             h2 { "Messages" }
             button {
-                style: "position: absolute; top: 10px; right: 10px; background-color: transparent; color: white;",
-                onclick: move |_| show_channel_messages_pane.set(false),
-                "X"
+                style: "position: absolute; top: 10px; right: 10px; background-color: transparent; border: none; cursor: pointer;",
+                onclick: move |_| { show_channel_messages_pane.set(false);},
+                svg {
+                    xmlns: "http://www.w3.org/2000/svg",
+                    view_box: "0 0 24 24",
+                    width: "30", // Adjust size as needed
+                    height: "30", // Adjust size as needed
+                    path {
+                        d: "M18 6 L6 18 M6 6 L18 18", // This path describes a close icon (X)
+                        fill: "none",
+                        stroke: "#f5f5f5", // Change stroke color as needed
+                        stroke_width: "2" // Adjust stroke width
+                    }
+                }
             }
             if let Some(messages_data) = messages() {
                 ul {
