@@ -1,3 +1,291 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Target the scrollbar track and make it transparent */
+::-webkit-scrollbar {
+  width: 10px; /* Adjust the width to your preference */
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; /* Set the background of the scrollbar track to transparent */
+}
+
+/* Optionally, style the scrollbar thumb (the draggable part) */
+::-webkit-scrollbar-thumb {
+  background-color: rgba(
+    0,
+    0,
+    0,
+    0.5
+  ); /* Set the scrollbar thumb color, adjust transparency as needed */
+  border-radius: 5px; /* Make the scrollbar thumb rounded */
+}
+
+/* Optional: For Firefox, use the scrollbar-color property */
+html {
+  scrollbar-color: rgba(0, 0, 0, 0.5) transparent; /* Transparent track and dark thumb */
+  scrollbar-width: thin; /* Use 'thin' or 'auto' for the scrollbar width */
+}
+
+body {
+  background-color: #111216;
+  overflow: hidden;
+}
+
+.main-container {
+  display: flex;
+  height: 100vh;
+}
+
+.vertical-bar {
+  height: calc(100vh - 40px);
+  width: 80px;
+  background-color: #2c2f33;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 2px;
+  border-radius: 10px;
+  padding-top: 20px;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centers items horizontally */
+  justify-content: center; /* Centers items vertically */
+  background-image: url("assets/curved-lizard.png"); /* Path to your transparent background image */
+  background-size: contain; /* Cover the entire area */
+  background-position: center; /* Center the background image */
+  background-repeat: no-repeat; /* Prevent the background from repeating */
+  position: relative;
+}
+
+.login-pane {
+  position: fixed;
+  top: 0;
+  right: -350px; /* Initially off-screen */
+  width: 350px;
+  height: 100%;
+  background-color: #1f20226e;
+  transition: right 0.5s ease-in-out;
+  z-index: 1002;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start; /* Align content to the top */
+  padding-top: 15%; /* Add padding to move content down */
+  /* Add backdrop filter for blur effect */
+  backdrop-filter: blur(10px); /* Adjust the blur strength as needed */
+  -webkit-backdrop-filter: blur(10px); /* For Safari support */
+}
+
+.login-pane.show {
+  right: 0; /* Slide in */
+}
+
+.login-input {
+  width: 110%;
+  height: 30px;
+  padding: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc; /* Add a border for clarity */
+  outline: none; /* Remove default outline */
+}
+
+.login-button {
+  width: 40%;
+  height: 30px;
+  padding: 5px;
+  border-radius: 10px;
+  border: 1px solid #ccc; /* Add a border for clarity */
+  outline: none; /* Remove default outline */
+  color: rgb(129, 187, 132);
+}
+
+.login-input:focus {
+  border-color: #007bff; /* Change border color on focus */
+}
+
+.discord-login {
+  transition: opacity 0.3s ease, visibility 0.3s ease; /* Smooth transition for opacity and visibility */
+  opacity: 0; /* Default opacity is 0 (invisible) */
+  visibility: hidden; /* Initially hidden */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.discord-login.visible {
+  opacity: 1; /* Fully visible */
+  visibility: visible; /* Ensure it's visible */
+}
+
+.discord-bottom-pane {
+  position: fixed;
+  bottom: -100%; /* Initially off-screen */
+  left: 100px; /* Width of the left bar, adjust as necessary */
+  width: calc(100% - 110px); /* Full width minus left bar */
+  height: calc(100% - 10px); /* Adjust height based on your header height */
+  background-color: #404a57; /* Background color */
+  transition: bottom 0.5s ease-in-out; /* Slide transition */
+  z-index: 999; /* Layer on top */
+  overflow-y: auto; /* Enable vertical scrolling */
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.discord-bottom-pane.show {
+  bottom: 0; /* Slide in */
+}
+
+.guild-list {
+  list-style-type: none; /* This removes the bullet points */
+  padding: 5px;
+}
+
+.guild-button {
+  background-color: #7289da;
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  margin: 5px 0;
+  width: 100%;
+  text-align: left;
+  border-radius: 10px;
+}
+
+.guild-button:hover {
+  background-color: #5b6eae;
+}
+
+.channel-list-pane {
+  position: fixed;
+  bottom: -100%; /* Start off-screen at the bottom */
+  left: 100px;
+  width: calc(100% - 110px);
+  height: calc(100% - 50px); /* Adjust height as necessary */
+  overflow-y: auto;
+  background-color: #282c34; /* Dark background for pane */
+  color: white;
+  transition: bottom 0.5s ease-in-out, opacity 0.4s ease-in-out;
+  opacity: 0; /* Fully transparent when hidden */
+  z-index: 1000;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+/* When the pane is shown, slide it up */
+.channel-list-pane.show {
+  bottom: 0; /* Move into view */
+  opacity: 1; /* Fully visible */
+}
+
+.channel-list {
+  list-style-type: none; /* This removes the bullet points */
+  padding: 5px;
+}
+
+.channel-button {
+  background-color: #7289da;
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  margin: 5px 0;
+  width: 100%;
+  text-align: left;
+  border-radius: 10px;
+}
+
+.channel-button:hover {
+  background-color: #5b6eae;
+}
+
+.channel-messages-list-pane {
+  position: fixed;
+  bottom: -100%; /* Start off-screen at the bottom */
+  left: 100px;
+  width: calc(100% - 110px);
+  height: calc(100% - 100px); /* Adjust height as necessary */
+  overflow-y: auto;
+  background-color: #4c5463; /* Dark background for pane */
+  color: white;
+  transition: bottom 0.5s ease-in-out, opacity 0.4s ease-in-out;
+  opacity: 0; /* Fully transparent when hidden */
+  z-index: 1001;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+/* When the pane is shown, slide it up */
+.channel-messages-list-pane.show {
+  bottom: 0; /* Move into view */
+  opacity: 1; /* Fully visible */
+}
+
+.messages-list {
+  list-style-type: none; /* This removes the bullet points */
+  padding: 5px;
+}
+
+.messages-button {
+  background-color: #7289da;
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  margin: 5px 0;
+  width: 80%;
+  height: auto;
+  text-align: left;
+  border-radius: 10px;
+}
+
+.messages-button:hover {
+  background-color: #5b6eae;
+}
+
+.message-input-container {
+  position: fixed;
+  bottom: 0;
+  width: calc(100% - 145px);
+  z-index: 100; /* Keep the same high z-index */
+  background-color: #fff;
+  padding: 10px;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1); /* Optional: shadow effect */
+  display: flex;
+  align-items: center;
+  border-radius: 10px;
+}
+
+.message-input-box {
+  flex: 1; /* Take up remaining space */
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.send-button {
+  margin-left: 10px;
+  padding: 8px 16px;
+  background-color: #4caf50; /* Green background */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.send-button:hover {
+  background-color: #45a049; /* Darker green on hover */
+}

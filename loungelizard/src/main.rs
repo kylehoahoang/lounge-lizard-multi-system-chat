@@ -52,7 +52,6 @@ fn Home() -> Element {
     rsx! {
         div {
             class: "main-container",
-            style: "display: flex; height: 100vh;",
 
             // Left vertical bar
             div {
@@ -70,9 +69,20 @@ fn Home() -> Element {
             // Main content area
             div {
                 class: "main-content",
-                style: "flex: 1; padding-left: 20px;",
-                h1 { style: "color: white;", "Welcome to Lounge Lizard!" }
-                h2 { style: "color: white;", "Please select a service to continue." }
+
+                h2 { 
+                    style: "
+                        font-family: Arial Black; 
+                        color: #F5F5F5; 
+                        background: rgba(0, 0, 0, 0.25); 
+                        padding: 15px; 
+                        border-radius: 5px;
+                        position: absolute; 
+                        top: -18px; 
+                        left: 15px;
+                    ", 
+                    "welcome back to lounge lizard" 
+                }
 
                 // Sliding login pane
                 div {
@@ -151,9 +161,20 @@ fn DiscordLogin(show_login_pane: Signal<bool>, show_discord_login_pane: Signal<b
                 height: "50px",
             }
             button {
-                style: "position: absolute; top: 10px; right: 10px; background-color: red; color: white;",
-                onclick: move |_| {show_login_pane.set(false); show_discord_login_pane.set(false)},
-                "X"
+                style: "position: absolute; top: 10px; right: 10px; background-color: transparent; border: none; cursor: pointer;",
+                onclick: move |_| { show_login_pane.set(false); show_discord_login_pane.set(false) },
+                svg {
+                    xmlns: "http://www.w3.org/2000/svg",
+                    view_box: "0 0 24 24",
+                    width: "30", // Adjust size as needed
+                    height: "30", // Adjust size as needed
+                    path {
+                        d: "M18 6 L6 18 M6 6 L18 18", // This path describes a close icon (X)
+                        fill: "none",
+                        stroke: "white", // Change stroke color as needed
+                        stroke_width: "2" // Adjust stroke width
+                    }
+                }
             }
             input {
                 class: "login-input",
