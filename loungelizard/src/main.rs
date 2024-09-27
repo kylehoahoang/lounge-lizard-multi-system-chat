@@ -1,9 +1,10 @@
 #![allow(non_snake_case)]
 
-mod discord_api;
+
 
 use dioxus::prelude::*;
 use dioxus_logger::tracing::{info, Level};
+
 use futures::executor::block_on;
 use serde_json::Value;
 use tokio::time;
@@ -11,11 +12,36 @@ use futures_util::StreamExt;
 use chrono::{DateTime, Utc, NaiveDateTime};
 
 
+// * Regular Page Routing Files 
+mod pages;
+use pages::Discord::*;
+use pages::MSTeam::*;
+use pages::Slack::*;
+use pages::Home::*;
+
+// * Login Page Routing Files
+mod logins;
+
+// * Api server files
+mod api;
+use api::discord_api;
+
+// * MongoDB 
+
+
+
 #[derive(Clone, Routable, Debug, PartialEq)]
 enum Route {
     #[route("/")]
     Home {},
+    #[route("/Slack")]
+    Slack {},
+    #[route("/Discord")]
+    Discord {},
+    #[route("/MSTeams")]
+    MSTeams {},
 }
+
 
 fn main() {
     // Init logger
@@ -32,174 +58,7 @@ pub fn App() -> Element {
     rsx! { Router::<Route> {} }
 }
 
-#[component]
-fn Home() -> Element {
-    let mut show_login_pane = use_signal(|| false);
-    let mut show_discord_login_pane = use_signal(|| false);
-    let mut show_discord_server_pane = use_signal(|| false);
-    let mut discord_token = use_signal(|| "".to_string());
-    let mut discord_guilds = use_signal(|| Value::Null);
-
-    let handle_discord_click = move |_| {
-        if discord_token.to_string() == "" {
-            show_login_pane.set(!show_login_pane()); 
-            show_discord_login_pane.set(!show_discord_login_pane());
-        }
-        else {
-            show_discord_server_pane.set(!show_discord_server_pane());
-        }
-    };
-
-    rsx! {
-        div {
-            class: "main-container",
-
-            // Left vertical bar
-            div {
-                class: "vertical-bar",
-                div {
-                    class: {
-                        format_args!("white-square {}", if show_discord_login_pane() || show_discord_server_pane() { "opaque" } else { "transparent" })
-                    },
-                    img {
-                        src: "assets/discord_logo.png",
-                        alt: "Discord Logo",
-                        width: "50px",
-                        height: "50px",
-                        style: "cursor: pointer;",
-                        onclick: handle_discord_click,
-                    }
-                }
-            }
-
-            // Main content area
-            div {
-                class: "main-content",
-
-                h1 { 
-                    class: "welcome-message", 
-                    "welcome back to lounge lizard" 
-                }
-
-                // Sliding login pane
-                div {
-                    class: {
-                        format_args!("login-pane {}", if show_login_pane() { "show" } else { "" })
-                    },
-                    DiscordLogin { 
-                        show_login_pane: show_login_pane.clone(), 
-                        show_discord_login_pane: show_discord_login_pane.clone(),
-                        show_discord_server_pane: show_discord_server_pane.clone(), 
-                        discord_token: discord_token.clone(),
-                        discord_guilds: discord_guilds.clone(),
-                    }, 
-                }
-
-                // Bottom pane for servers
-                DiscordBottomPane { 
-                    show_discord_server_pane: show_discord_server_pane.clone(),
-                    discord_guilds: discord_guilds.clone(),
-                    discord_token: discord_token.clone()
-                }, 
-            }
-        }
-    }
-}
-
-
-#[component]
-fn DiscordLogin(show_login_pane: Signal<bool>, show_discord_login_pane: Signal<bool>, show_discord_server_pane: Signal<bool>, discord_token: Signal<String>, discord_guilds: Signal<Value>) -> Element {
-    let mut username = use_signal(|| "".to_string());
-    let mut password = use_signal(|| "".to_string());
-
-    let mut login_error = use_signal(|| None::<String>);
-
-    let handle_login = move |_| {
-        let username = username.clone();
-        let password = password.clone();
-
-        block_on(async move {
-            match discord_api::login_request(username.to_string(), password.to_string()).await {
-                Ok((user_id, auth_discord_token)) => {
-                    discord_token.set(auth_discord_token); // Call the success handler
-                    show_login_pane.set(false);
-                    show_discord_login_pane.set(false);
-                    show_discord_server_pane.set(true);
-                    info!("Login successful");
-                }
-                Err(e) => {
-                    login_error.set(Some(e.to_string()));
-                    info!("Login failed: {}", e);
-                }
-            }
-        });
-
-        block_on(async move {
-            match discord_api::get_guilds(discord_token.to_string()).await {
-                Ok((discord_guilds_response)) => {
-                    discord_guilds.set(discord_guilds_response); // Call the success handler
-                    info!("discord_guilds get successful");
-                }
-                Err(e) => {
-                    login_error.set(Some(e.to_string()));
-                    info!("discord_guilds get failed: {}", e);
-                }
-            }
-        });
-    };
-
-    rsx! {
-        div {
-            class: format_args!("discord-login {}", if show_discord_login_pane() { "visible" } else { "" }),
-            img {
-                src: "assets/discord_logo.png",
-                alt: "Discord Logo",
-                width: "50px",
-                height: "50px",
-            }
-            button {
-                style: "position: absolute; top: 10px; right: 10px; background-color: transparent; border: none; cursor: pointer;",
-                onclick: move |_| { show_login_pane.set(false); show_discord_login_pane.set(false) },
-                svg {
-                    xmlns: "http://www.w3.org/2000/svg",
-                    view_box: "0 0 24 24",
-                    width: "30", // Adjust size as needed
-                    height: "30", // Adjust size as needed
-                    path {
-                        d: "M18 6 L6 18 M6 6 L18 18", // This path describes a close icon (X)
-                        fill: "none",
-                        stroke: "#f5f5f5", // Change stroke color as needed
-                        stroke_width: "2" // Adjust stroke width
-                    }
-                }
-            }
-            input {
-                class: "login-input",
-                value: "{username}",
-                placeholder: "Username/Email",
-                oninput: move |event| username.set(event.value())
-            }
-            input {
-                class: "login-input",
-                r#type: "password",
-                value: "{password}",
-                placeholder: "Password",
-                oninput: move |event| password.set(event.value())
-            }
-            button { 
-                class: "login-button",
-                onclick: handle_login, "Login" 
-            }
-
-            if let Some(error) = login_error() {
-                p { "Login failed: {error}" }
-            }
-        }
-    }
-}
-
-
-
+// TODO Everything below could be moved
 #[component]
 fn DiscordBottomPane(show_discord_server_pane: Signal<bool>, discord_guilds: Signal<Value>, discord_token: Signal<String>) -> Element {
     let discord_guilds_array = discord_guilds().as_array().unwrap_or(&vec![]).clone();

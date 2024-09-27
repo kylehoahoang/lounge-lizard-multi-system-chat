@@ -1,0 +1,36 @@
+{
+    "_id":{"$oid":"66f610ef3da34303df187da2"},
+    "user":
+    {
+        "password":"",
+        "username":"",
+        "email":"",
+        "Slack":{
+            "app_id":"",
+            "bot":{
+                "token":"",
+                "scope":""
+            },
+            "client_id":"",
+            "client_secret":"",
+            "config_token":"",
+            "oauth_url":"",
+            "redirect_host":"",
+            "team":{
+                "name":"",
+                "id":""
+            },
+            "user":{
+                "token":"",
+                "scope":""
+            },"verif_token":""
+        },
+        "Discord":{
+            "token":""
+        },
+        "MSTeams":{
+
+        }
+        
+    }
+}

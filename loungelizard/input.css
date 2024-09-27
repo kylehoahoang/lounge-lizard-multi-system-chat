@@ -136,6 +136,36 @@ body {
   gap: 20px;
 }
 
+.slack-login {
+  transition: opacity 0.3s ease, visibility 0.3s ease; /* Smooth transition for opacity and visibility */
+  opacity: 0; /* Default opacity is 0 (invisible) */
+  visibility: hidden; /* Initially hidden */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.teams-login {
+  transition: opacity 0.3s ease, visibility 0.3s ease; /* Smooth transition for opacity and visibility */
+  opacity: 0; /* Default opacity is 0 (invisible) */
+  visibility: hidden; /* Initially hidden */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.teams-login.visible {
+  opacity: 1; /* Fully visible */
+  visibility: visible; /* Ensure it's visible */
+}
+.slack-login.visible {
+  opacity: 1; /* Fully visible */
+  visibility: visible; /* Ensure it's visible */
+}
 .discord-login.visible {
   opacity: 1; /* Fully visible */
   visibility: visible; /* Ensure it's visible */
