@@ -117,6 +117,48 @@ fn DiscordLogin(show_login_pane: Signal<bool>, show_discord_login_pane: Signal<b
     let mut captcha_sitekey = use_signal(|| "".to_string());
     let mut captcha_rqtoken = use_signal(|| "".to_string());
 
+    let mut eval = eval(
+        r#"
+            // Wait for the sitekey from Rust (via Dioxus)
+            let sitekey = await dioxus.recv();
+            console.log('Received sitekey: ' + sitekey);
+
+            // Inject the hCaptcha API script only after receiving the sitekey
+            if (!document.querySelector('script[src="https://hcaptcha.com/1/api.js"]')) {
+                const script = document.createElement('script');
+                script.src = 'https://hcaptcha.com/1/api.js';
+                script.async = true;
+                script.defer = true;
+                document.head.appendChild(script);
+
+                // Render the hCaptcha widget once the script is loaded
+                script.onload = function() {
+                    renderCaptchaWidget(sitekey);
+                };
+            } else {
+                // If script is already loaded, immediately render the widget
+                renderCaptchaWidget(sitekey);
+            }
+
+            // Function to render the hCaptcha widget
+            function renderCaptchaWidget(sitekey) {
+                if (document.getElementById('hcaptcha-widget')) {
+                    hcaptcha.render('hcaptcha-widget', {
+                        sitekey: sitekey, // Dynamically set the sitekey from Rust
+                        callback: function(response) {
+                            // Send the CAPTCHA response token back to Rust
+                            console.log('CAPTCHA response token in send: ' + response);
+                            dioxus.send(response);
+                            console.log('CAPTCHA response sent to dioxus!');
+                        }
+                    });
+                } else {
+                    console.error('CAPTCHA widget container not found.');
+                }
+        }
+
+    "#);
+
     let handle_login = move |_| {
         let username = username.clone();
         let password = password.clone();
@@ -129,7 +171,7 @@ fn DiscordLogin(show_login_pane: Signal<bool>, show_discord_login_pane: Signal<b
                     show_discord_login_pane.set(false);
                     show_discord_server_pane.set(true);
                     info!("Login successful");
-                    
+
                     match discord_api::get_guilds(discord_token.to_string()).await {
                         Ok((discord_guilds_response)) => {
                             discord_guilds.set(discord_guilds_response); // Call the success handler
@@ -163,47 +205,7 @@ fn DiscordLogin(show_login_pane: Signal<bool>, show_discord_login_pane: Signal<b
                                 captcha_rqtoken.set(rqtoken.to_string());
                                 captcha_required.set(true);
 
-                                let mut eval = eval(r#"
-                                    r#"
-                                        // Wait for the sitekey from Rust (via Dioxus)
-                                        let sitekey = await dioxus.recv();
-                                        console.log('Received sitekey: ' + sitekey);
-
-                                        // Inject the hCaptcha API script only after receiving the sitekey
-                                        if (!document.querySelector('script[src="https://hcaptcha.com/1/api.js"]')) {
-                                            const script = document.createElement('script');
-                                            script.src = 'https://hcaptcha.com/1/api.js';
-                                            script.async = true;
-                                            script.defer = true;
-                                            document.head.appendChild(script);
-
-                                            // Render the hCaptcha widget once the script is loaded
-                                            script.onload = function() {
-                                                renderCaptchaWidget(sitekey);
-                                            };
-                                        } else {
-                                            // If script is already loaded, immediately render the widget
-                                            renderCaptchaWidget(sitekey);
-                                        }
-
-                                        // Function to render the hCaptcha widget
-                                        function renderCaptchaWidget(sitekey) {
-                                            if (document.getElementById('hcaptcha-widget')) {
-                                                hcaptcha.render('hcaptcha-widget', {
-                                                    sitekey: sitekey, // Dynamically set the sitekey from Rust
-                                                    callback: function(response) {
-                                                        // Send the CAPTCHA response token back to Rust
-                                                        console.log('CAPTCHA response token in send: ' + response);
-                                                        dioxus.send(response);
-                                                        console.log('CAPTCHA response sent to dioxus!');
-                                                    }
-                                                });
-                                            } else {
-                                                console.error('CAPTCHA widget container not found.');
-                                            }
-                                    }
-
-                                "#);
+                                
 
                                 eval.send(sitekey.into()).unwrap();
 
@@ -227,18 +229,17 @@ fn DiscordLogin(show_login_pane: Signal<bool>, show_discord_login_pane: Signal<b
                                                         show_discord_login_pane.set(false);
                                                         show_discord_server_pane.set(true);
                                                         info!("Login with captcha successful");
-                                                        block_on(async move {
-                                                            match discord_api::get_guilds(discord_token.to_string()).await {
-                                                                Ok((discord_guilds_response)) => {
-                                                                    discord_guilds.set(discord_guilds_response); // Call the success handler
-                                                                    info!("discord_guilds get successful");
-                                                                }
-                                                                Err(e) => {
-                                                                    login_error.set(Some(e.to_string()));
-                                                                    info!("discord_guilds get failed: {}", e);
-                                                                }
+
+                                                        match discord_api::get_guilds(discord_token.to_string()).await {
+                                                            Ok((discord_guilds_response)) => {
+                                                                discord_guilds.set(discord_guilds_response); // Call the success handler
+                                                                info!("discord_guilds get successful");
                                                             }
-                                                        });
+                                                            Err(e) => {
+                                                                login_error.set(Some(e.to_string()));
+                                                                info!("discord_guilds get failed: {}", e);
+                                                            }
+                                                        }
                                                     }
                                                     Err(e) => {
                                                         println!("something went wrong in captcha login final step");
