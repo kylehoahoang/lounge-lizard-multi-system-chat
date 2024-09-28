@@ -2,19 +2,22 @@
 
 use dioxus::prelude::*;
 use serde_json::Value;
+use std::sync::{Arc, Mutex};
 
 // * Login Page Routing Files
 use crate::logins::Discord::* ;
 use crate::logins::Slack::* ;
 use crate::logins::MSTeams::* ;
 
-//* Mongo DB Files */
-use mongodb::{bson::doc, options::{ClientOptions, ServerApi, ServerApiVersion}, Client};
-
-
+// Api mongo structs
+use crate::api::mongo_format::mongo_structs::*;
 
 #[component]
 pub fn Home() -> Element {
+   // ! User Mutex Lock to access the user data
+   let user_lock = use_context::<Signal<Arc<Mutex<User>>>>();
+   // ! ========================= ! //
+    
     // Discord Values 
     let mut show_discord_login_pane = use_signal(|| false);
     let mut show_discord_server_pane = use_signal(|| false);
@@ -51,6 +54,7 @@ pub fn Home() -> Element {
             // Set Other tokens to false
             show_discord_login_pane.set(false);
             show_teams_login_pane.set(false);
+            
         }
         else {
 
@@ -144,16 +148,19 @@ pub fn Home() -> Element {
                             show_discord_server_pane: show_discord_server_pane.clone(), 
                             discord_token: discord_token.clone(),
                             discord_guilds: discord_guilds.clone(),
+                            //user
                         }
                     }
                     else if show_slack_login_pane() {
                         SlackLogin { 
-                            show_slack_login_pane: show_slack_login_pane.clone()
+                            show_slack_login_pane: show_slack_login_pane.clone(),
+                            //user
                         }
                     }
                     else if show_teams_login_pane() {
                         MSTeamsLogin { 
-                            show_teams_login_pane: show_teams_login_pane.clone()
+                            show_teams_login_pane: show_teams_login_pane.clone(),
+                           //user
                         }
                     }
                     

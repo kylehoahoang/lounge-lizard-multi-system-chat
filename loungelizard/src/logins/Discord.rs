@@ -4,9 +4,24 @@ use crate::api::discord_api;
 use dioxus_logger::tracing::{info};
 use futures::executor::block_on;
 use serde_json::Value;
+use crate::api::mongo_format::mongo_structs::*;
+
+use std::sync::{Arc, Mutex};
 
 #[component]
-pub fn DiscordLogin(show_discord_login_pane: Signal<bool>, show_discord_server_pane: Signal<bool>, discord_token: Signal<String>, discord_guilds: Signal<Value>) -> Element {
+pub fn DiscordLogin(
+
+    show_discord_login_pane: Signal<bool>,
+    show_discord_server_pane: Signal<bool>,
+    discord_token: Signal<String>,
+    discord_guilds: Signal<Value>  
+   
+)
+-> Element {
+    // ! User Mutex Lock to access the user data
+    let user_lock = use_context::<Signal<Arc<Mutex<User>>>>();
+    // ! ========================= ! //
+
     let mut username = use_signal(|| "".to_string());
     let mut password = use_signal(|| "".to_string());
 

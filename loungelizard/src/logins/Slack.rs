@@ -1,25 +1,38 @@
 use dioxus::prelude::*;
-use crate::Route;
-use clipboard_rs::{Clipboard, ClipboardContext, ContentFormat};
+use crate::{AppRoute};
 
+use clipboard_rs::{Clipboard, ClipboardContext, ContentFormat};
+use crate::api::mongo_format::mongo_structs::*;
+
+use std::sync::{Arc, Mutex};
 
 #[component]
 pub fn SlackLogin (show_slack_login_pane: Signal<bool>) -> Element {
+
+    // ! User Mutex Lock to access the user data
+    let user_lock = use_context::<Signal<Arc<Mutex<User>>>>();
+    // ! ========================= ! //
+
     let mut username = use_signal(|| "".to_string());
     let mut password = use_signal(|| "".to_string());
 
     let mut logged_in = use_signal(|| false);
     let mut login_error = use_signal(|| None::<String>);
 
-    let handle_login = move |_| {
-        let username = username.clone();
-        let password = password.clone();
-
-    };
     let handle_new_user = move |_| {
-        let ctx = ClipboardContext::new().unwrap();
-        let token = ctx.get_text().unwrap_or("".to_string());
-	    
+        // let ctx = ClipboardContext::new().unwrap();
+        // let token = ctx.get_text().unwrap_or("".to_string());
+    
+        if let Ok(mut user_lock) = user_lock().lock() {
+            let new_username = "NewUsername".to_string();
+            
+            // Modify the `User` struct directly.
+            user_lock.username = new_username;
+
+            println!("Updated User Data: {:#?}", user_lock);
+        } else {
+            println!("Failed to acquire lock on the user.");
+        }
     };
 
     rsx! {
@@ -47,34 +60,7 @@ pub fn SlackLogin (show_slack_login_pane: Signal<bool>) -> Element {
                     }
                 }
             }
-            input {
-                class: "login-input",
-                value: "{username}",
-                placeholder: "Username/Email",
-                oninput: move |event| username.set(event.value())
-            }
-            input {
-                class: "login-input",
-                r#type: "password",
-                value: "{password}",
-                placeholder: "Password",
-                oninput: move |event| password.set(event.value())
-            }
-          
-            button { 
-                class: "login-button",
-                onclick: handle_login, "Login" 
-            }
-
-             // Horizontal line
-             div {
-                style: "height: 2px; background-color: white; margin: 10px 10px; width: 100%;",
-            }
-            h1 {
-                style: "color: white; font-size: 20px;",
-                "New User Setup"
-            }
-
+           
             a {
                 href: "https://api.slack.com/apps", // The URL you want to navigate to
                 target: "_top",               // Opens in a new tab (optional)
@@ -83,9 +69,12 @@ pub fn SlackLogin (show_slack_login_pane: Signal<bool>) -> Element {
                     "Slack Api" 
                 }
             }
-       
+            button { 
+                class: "login-button",
+                onclick: handle_new_user, "Add WorkSpace" 
+            }
             Link { 
-                to: if true {Route::Slack {}} else {Route::Home {}},
+                to: if true {AppRoute::Slack {}} else {AppRoute::Home {}},
                 button { 
                     class: "login-button",
                     onclick: handle_new_user, "Add WorkSpace" 

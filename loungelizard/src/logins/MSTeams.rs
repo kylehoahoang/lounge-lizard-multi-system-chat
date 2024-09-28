@@ -1,7 +1,22 @@
 use dioxus::prelude::*;
+use crate::api::mongo_format::mongo_structs::*;
+
+use std::sync::{Arc, Mutex};
+
 
 #[component]
 pub fn MSTeamsLogin (show_teams_login_pane: Signal<bool>) -> Element {
+
+   // ! User Mutex Lock to access the user data
+   let user_lock = use_context::<Signal<Arc<Mutex<User>>>>();
+   // ! ========================= ! //
+
+    let mut username = use_signal(|| "".to_string());
+    let mut password = use_signal(|| "".to_string());
+
+    let mut logged_in = use_signal(|| false);
+    let mut login_error = use_signal(|| None::<String>);
+
     let mut username = use_signal(|| "".to_string());
     let mut password = use_signal(|| "".to_string());
 

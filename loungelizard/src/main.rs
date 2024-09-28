@@ -1,9 +1,8 @@
 #![allow(non_snake_case)]
 
-
-
 use dioxus::prelude::*;
-use dioxus_logger::tracing::{info, Level};
+use dioxus_logger::tracing::{info, error, Level};
+
 
 use futures::executor::block_on;
 use serde_json::Value;
@@ -25,13 +24,14 @@ mod logins;
 // * Api server files
 mod api;
 use api::discord_api;
+use api::mongo_format::mongo_structs::*;
 
-// * MongoDB 
-
+use lazy_static::lazy_static;
+use std::sync::{Arc, Mutex};
 
 
 #[derive(Clone, Routable, Debug, PartialEq)]
-enum Route {
+enum AppRoute {
     #[route("/")]
     Home {},
     #[route("/Slack")]
@@ -42,21 +42,38 @@ enum Route {
     MSTeams {},
 }
 
+// Global User instance using lazy_static
+lazy_static! {
+    static ref GLOBAL_USER: Arc<Mutex<User>> = Arc::new(Mutex::new(User::default()));
+}
+
 
 fn main() {
-    // Init logger
+
     dioxus_logger::init(Level::INFO).expect("failed to init logger");
-    info!("starting app");
+    info!("starting application...");
+
 
     let cfg = dioxus::desktop::Config::new()
         .with_custom_head(r#"<link rel="stylesheet" href="/assets/tailwind.css">"#.to_string());
-    LaunchBuilder::desktop().with_cfg(cfg).launch(App);
+
+    LaunchBuilder::desktop()
+        .with_cfg(cfg)
+        .launch(App);
+
 }
 
 #[component]
-pub fn App() -> Element {
-    rsx! { Router::<Route> {} }
+fn App() -> Element {
+
+    // Create a global signal for the Arc<Mutex<User>> data
+    let user_lock = use_signal(|| GLOBAL_USER.clone());
+
+    provide_context(user_lock.clone());
+
+    rsx! { Router::<AppRoute> {} }
 }
+
 
 // TODO Everything below could be moved
 #[component]
