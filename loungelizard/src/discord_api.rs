@@ -84,7 +84,13 @@ pub async fn login_request_captcha(
         Ok((user_id, token))
     } 
     else {
-        Err(format!("Login request with captcha failed with status: {}", response.status()).into())
+         let status = response.status();
+         let error_body = response.text().await.unwrap_or_else(|_| "Failed to read response body".to_string());
+         Err(format!(
+             "Login request with captcha failed with status: {}. Response body: {}",
+             status,
+             error_body
+         ).into())
     }
 }
 

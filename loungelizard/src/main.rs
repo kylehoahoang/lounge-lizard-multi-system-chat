@@ -115,52 +115,7 @@ fn DiscordLogin(show_login_pane: Signal<bool>, show_discord_login_pane: Signal<b
     let mut login_error = use_signal(|| None::<String>);
     let mut captcha_required = use_signal(|| false);
     let mut captcha_sitekey = use_signal(|| "".to_string());
-
-    let mut eval = eval(r#"
-        // Inject the hCaptcha API script if it's not already loaded
-        if (!document.querySelector('script[src="https://hcaptcha.com/1/api.js"]')) {
-            const script = document.createElement('script');
-            script.src = "https://hcaptcha.com/1/api.js";
-            script.async = true;
-            script.defer = true;
-            document.head.appendChild(script);
-
-            // Function to render hCaptcha widget once the script is loaded
-            script.onload = async function() {
-                // Wait for the sitekey from Rust (via Dioxus)
-                let sitekey = await dioxus.recv();
-                console.log("Received sitekey: " + sitekey);
-
-                // Render the hCaptcha widget with the received sitekey
-                renderCaptchaWidget(sitekey);
-            };
-        } else {
-            // If script is already loaded, immediately wait for the sitekey
-            let sitekey = await dioxus.recv();
-            console.log("Received sitekey: " + sitekey);
-
-            // Render the hCaptcha widget with the received sitekey
-            renderCaptchaWidget(sitekey);
-        }
-
-        // Function to render the hCaptcha widget
-        function renderCaptchaWidget(sitekey) {
-            if (document.getElementById('hcaptcha-widget')) {
-                hcaptcha.render('hcaptcha-widget', {
-                    sitekey: sitekey, // Dynamically set the sitekey from Rust
-                    callback: function(response) {
-                        // Send the CAPTCHA response token back to Rust
-                        console.log("CAPTCHA response token in send: " + response);
-                        dioxus.send(response);
-                        console.log("CAPTCHA response sent to dioxus! ");
-                    }
-                });
-            } else {
-                console.error('CAPTCHA widget container not found.');
-            }
-        }
-
-    "#);
+    let mut captcha_rqtoken = use_signal(|| "".to_string());
 
     let handle_login = move |_| {
         let username = username.clone();
@@ -174,38 +129,82 @@ fn DiscordLogin(show_login_pane: Signal<bool>, show_discord_login_pane: Signal<b
                     show_discord_login_pane.set(false);
                     show_discord_server_pane.set(true);
                     info!("Login successful");
-                    block_on(async move {
-                        match discord_api::get_guilds(discord_token.to_string()).await {
-                            Ok((discord_guilds_response)) => {
-                                discord_guilds.set(discord_guilds_response); // Call the success handler
-                                info!("discord_guilds get successful");
-                            }
-                            Err(e) => {
-                                login_error.set(Some(e.to_string()));
-                                info!("discord_guilds get failed: {}", e);
-                            }
+                    
+                    match discord_api::get_guilds(discord_token.to_string()).await {
+                        Ok((discord_guilds_response)) => {
+                            discord_guilds.set(discord_guilds_response); // Call the success handler
+                            info!("discord_guilds get successful");
                         }
-                    });
+                        Err(e) => {
+                            login_error.set(Some(e.to_string()));
+                            info!("discord_guilds get failed: {}", e);
+                        }
+                    }
                 }
                 Err(e) => {
-                    let error_message = e.to_string(); // Create a longer-lived variable
-                    if error_message.contains("captcha-required") {
+                    if e.to_string().contains("captcha-required") {
                         println!("in captcha required");
+                        
+                        // Extract CAPTCHA sitekey from the error message
+                        let error_message = e.to_string(); // Create a longer-lived variable
                         println!("Error message: {}", error_message); // Debug print
-                        // Simplified regex to capture everything after "sitekey = "
-                        let re = regex::Regex::new(r"sitekey = ([^,]+), rqtoken = ([^,]+)").unwrap();
+                        
+                         // Simplified regex to capture everything after "sitekey = "
+                         let re = regex::Regex::new(r"sitekey = ([^,]+), rqtoken = ([^,]+)").unwrap();
 
-                        if let Some(captures) = re.captures(e.to_string().as_str()) {
+                        if let Some(captures) = re.captures(&error_message) {
                             if captures.len() == 3 {
+
                                 let sitekey = captures.get(1).map_or("", |m| m.as_str()).trim();
                                 let rqtoken = captures.get(2).map_or("", |m| m.as_str()).trim();
-                        
-                                println!("Final Captcha sitekey: {}", sitekey);
-                                println!("Final Captcha rqtoken: {}", rqtoken);
-                        
+
                                 // Set the CAPTCHA flag and trigger CAPTCHA rendering
                                 captcha_sitekey.set(sitekey.to_string());
+                                captcha_rqtoken.set(rqtoken.to_string());
                                 captcha_required.set(true);
+
+                                let mut eval = eval(r#"
+                                    r#"
+                                        // Wait for the sitekey from Rust (via Dioxus)
+                                        let sitekey = await dioxus.recv();
+                                        console.log('Received sitekey: ' + sitekey);
+
+                                        // Inject the hCaptcha API script only after receiving the sitekey
+                                        if (!document.querySelector('script[src="https://hcaptcha.com/1/api.js"]')) {
+                                            const script = document.createElement('script');
+                                            script.src = 'https://hcaptcha.com/1/api.js';
+                                            script.async = true;
+                                            script.defer = true;
+                                            document.head.appendChild(script);
+
+                                            // Render the hCaptcha widget once the script is loaded
+                                            script.onload = function() {
+                                                renderCaptchaWidget(sitekey);
+                                            };
+                                        } else {
+                                            // If script is already loaded, immediately render the widget
+                                            renderCaptchaWidget(sitekey);
+                                        }
+
+                                        // Function to render the hCaptcha widget
+                                        function renderCaptchaWidget(sitekey) {
+                                            if (document.getElementById('hcaptcha-widget')) {
+                                                hcaptcha.render('hcaptcha-widget', {
+                                                    sitekey: sitekey, // Dynamically set the sitekey from Rust
+                                                    callback: function(response) {
+                                                        // Send the CAPTCHA response token back to Rust
+                                                        console.log('CAPTCHA response token in send: ' + response);
+                                                        dioxus.send(response);
+                                                        console.log('CAPTCHA response sent to dioxus!');
+                                                    }
+                                                });
+                                            } else {
+                                                console.error('CAPTCHA widget container not found.');
+                                            }
+                                    }
+
+                                "#);
+
                                 eval.send(sitekey.into()).unwrap();
 
                                 // Capture the CAPTCHA response from JavaScript
@@ -221,7 +220,7 @@ fn DiscordLogin(show_login_pane: Signal<bool>, show_discord_login_pane: Signal<b
                                                 let trimmed_token = token_str.trim_matches('"'); // Remove surrounding quotes if present
                                                 
                                                 println!("Received CAPTCHA token: {}", trimmed_token); // Print the parsed token
-                                                match discord_api::login_request_captcha(username.to_string(), password.to_string(), trimmed_token.to_string(), rqtoken.to_string()).await {
+                                                match discord_api::login_request_captcha(username.to_string(), password.to_string(), trimmed_token.to_string(), captcha_rqtoken.to_string()).await {
                                                     Ok((user_id, auth_discord_token)) => {
                                                         discord_token.set(auth_discord_token); // Call the success handler
                                                         show_login_pane.set(false);
@@ -315,9 +314,9 @@ fn DiscordLogin(show_login_pane: Signal<bool>, show_discord_login_pane: Signal<b
                 onclick: handle_login, "Login" 
             }
 
-            //if captcha_required() {
+            if captcha_required() {
                 div { id: "hcaptcha-widget" } // This is where hCaptcha will be rendered
-            //}
+            }
 
             if let Some(error) = login_error() {
                 p { "Login failed: {error}" }
