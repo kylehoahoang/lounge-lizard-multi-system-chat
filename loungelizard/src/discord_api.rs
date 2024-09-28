@@ -1,10 +1,10 @@
 use reqwest::Client;
 use reqwest::header::{AUTHORIZATION, HeaderValue};
 use serde_json::Value;
+use std::collections::HashMap;
 use std::error::Error;
 use std::time::Duration;
 
-// FUNCTION: Sends login to Discord and returns auth token and user id
 pub async fn login_request(username: String, password: String) -> Result<(String, String), Box<dyn Error>> {
     let client = Client::new();
     let body = serde_json::json!({ "login": &username, "password": &password });
@@ -15,19 +15,79 @@ pub async fn login_request(username: String, password: String) -> Result<(String
         .send()
         .await?;
 
+    // Check the status before consuming the response
     if response.status().is_success() {
         let json_response: Value = response.json().await?;
+
+        // Extract user_id and token from the response
         let user_id = json_response["user_id"].as_str()
             .ok_or("Missing user_id in response")?
             .to_string();
         let token = json_response["token"].as_str()
             .ok_or("Missing token in response")?
             .to_string();
+
         Ok((user_id, token))
     } else {
-        Err(format!("Login request failed with status: {}", response.status()).into())
+        let json_response: Value = response.json().await.unwrap_or_default();
+        
+        // Check if the response indicates that CAPTCHA is required
+        if let Some(captcha_keys) = json_response.get("captcha_key").and_then(|v| v.as_array()) {
+            if captcha_keys.iter().any(|v| v == "captcha-required") {
+                let captcha_sitekey = json_response["captcha_sitekey"].as_str().unwrap_or("");
+                let captcha_rqtoken = json_response["captcha_rqtoken"].as_str().unwrap_or("");
+
+                // Return CAPTCHA-required error with the relevant data
+                return Err(format!(
+                    "captcha-required: sitekey = {}, rqtoken = {}",
+                    captcha_sitekey, captcha_rqtoken
+                ).into());
+            }
+        }
+
+        Err("Login request failed".into())
     }
 }
+
+
+
+
+// FUNCTION: Sends login to Discord with captcha token and returns auth token and user id
+pub async fn login_request_captcha(
+    username: String, 
+    password: String, 
+    captcha_token: String,
+    rqtoken: String
+) -> Result<(String, String), Box<dyn Error>> {
+    let client = reqwest::Client::new();
+    let body = serde_json::json!({ "login": &username, "password": &password });
+    let response = client
+        .post("https://discord.com/api/v9/auth/login")
+        .header("X-Captcha-Key", captcha_token)
+        .header("X-Captcha-Rqtoken", rqtoken) 
+        .json(&body)
+        .send()
+        .await?;
+
+    // Check the status before consuming the response
+    if response.status().is_success() {
+        let json_response: Value = response.json().await?;
+
+        // Extract user_id and token from the response
+        let user_id = json_response["user_id"].as_str()
+            .ok_or("Missing user_id in response")?
+            .to_string();
+        let token = json_response["token"].as_str()
+            .ok_or("Missing token in response")?
+            .to_string();
+
+        Ok((user_id, token))
+    } 
+    else {
+        Err(format!("Login request with captcha failed with status: {}", response.status()).into())
+    }
+}
+
 
 // FUNCTION: Get user's DM's
 pub async fn get_channels(token: &str) -> Result<Value, Box<dyn Error>> {
