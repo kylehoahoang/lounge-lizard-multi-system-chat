@@ -35,12 +35,13 @@ pub async fn login_request(username: String, password: String) -> Result<(String
         if let Some(captcha_keys) = json_response.get("captcha_key").and_then(|v| v.as_array()) {
             if captcha_keys.iter().any(|v| v == "captcha-required") {
                 let captcha_sitekey = json_response["captcha_sitekey"].as_str().unwrap_or("");
+                let captcha_rqdata = json_response["captcha_rqdata"].as_str().unwrap_or("");
                 let captcha_rqtoken = json_response["captcha_rqtoken"].as_str().unwrap_or("");
 
                 // Return CAPTCHA-required error with the relevant data
                 return Err(format!(
-                    "captcha-required: sitekey = {}, rqtoken = {}",
-                    captcha_sitekey, captcha_rqtoken
+                    "captcha-required: sitekey = {}, rqdata = {}, rqtoken = {}",
+                    captcha_sitekey, captcha_rqdata, captcha_rqtoken
                 ).into());
             }
         }

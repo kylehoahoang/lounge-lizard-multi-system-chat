@@ -120,8 +120,11 @@ fn DiscordLogin(show_login_pane: Signal<bool>, show_discord_login_pane: Signal<b
     let mut eval = eval(
         r#"
             // Wait for the sitekey from Rust (via Dioxus)
-            let sitekey = await dioxus.recv();
-            console.log('Received sitekey: ' + sitekey);
+            let payload = await dioxus.recv();
+            let sitekey = payload.sitekey;
+            let rqdata = payload.rqdata;
+            console.log("Received sitekey: " + sitekey);
+            console.log("Received rqdata: " + rqdata);
 
             // Inject the hCaptcha API script only after receiving the sitekey
             if (!document.querySelector('script[src="https://hcaptcha.com/1/api.js"]')) {
@@ -133,11 +136,11 @@ fn DiscordLogin(show_login_pane: Signal<bool>, show_discord_login_pane: Signal<b
 
                 // Render the hCaptcha widget once the script is loaded
                 script.onload = function() {
-                    renderCaptchaWidget(sitekey);
+                    renderCaptchaWidget(sitekey, rqdata);
                 };
             } else {
                 // If script is already loaded, immediately render the widget
-                renderCaptchaWidget(sitekey);
+                renderCaptchaWidget(sitekey, rqdata);
             }
 
             // Function to render the hCaptcha widget
@@ -145,6 +148,8 @@ fn DiscordLogin(show_login_pane: Signal<bool>, show_discord_login_pane: Signal<b
                 if (document.getElementById('hcaptcha-widget')) {
                     hcaptcha.render('hcaptcha-widget', {
                         sitekey: sitekey, // Dynamically set the sitekey from Rust
+                        theme: 'dark',
+                        rqdata: rqdata,
                         callback: function(response) {
                             // Send the CAPTCHA response token back to Rust
                             console.log('CAPTCHA response token in send: ' + response);
@@ -192,22 +197,26 @@ fn DiscordLogin(show_login_pane: Signal<bool>, show_discord_login_pane: Signal<b
                         println!("Error message: {}", error_message); // Debug print
                         
                          // Simplified regex to capture everything after "sitekey = "
-                         let re = regex::Regex::new(r"sitekey = ([^,]+), rqtoken = ([^,]+)").unwrap();
+                         let re = regex::Regex::new(r"sitekey = ([^,]+), rqdata = ([^,]+), rqtoken = ([^,]+)").unwrap();
 
                         if let Some(captures) = re.captures(&error_message) {
-                            if captures.len() == 3 {
+                            if captures.len() == 4 {
 
                                 let sitekey = captures.get(1).map_or("", |m| m.as_str()).trim();
-                                let rqtoken = captures.get(2).map_or("", |m| m.as_str()).trim();
+                                let rqdata = captures.get(2).map_or("", |m| m.as_str()).trim();
+                                let rqtoken = captures.get(3).map_or("", |m| m.as_str()).trim();
 
                                 // Set the CAPTCHA flag and trigger CAPTCHA rendering
                                 captcha_sitekey.set(sitekey.to_string());
                                 captcha_rqtoken.set(rqtoken.to_string());
                                 captcha_required.set(true);
-
                                 
+                                let payload = json!({
+                                    "sitekey": sitekey,
+                                    "rqdata": rqdata
+                                });
 
-                                eval.send(sitekey.into()).unwrap();
+                                eval.send(payload).unwrap();
 
                                 // Capture the CAPTCHA response from JavaScript
                                 let _future = use_resource(move || {
@@ -222,31 +231,31 @@ fn DiscordLogin(show_login_pane: Signal<bool>, show_discord_login_pane: Signal<b
                                                 let trimmed_token = token_str.trim_matches('"'); // Remove surrounding quotes if present
                                                 
                                                 println!("Received CAPTCHA token: {}", trimmed_token); // Print the parsed token
-                                                match discord_api::login_request_captcha(username.to_string(), password.to_string(), trimmed_token.to_string(), captcha_rqtoken.to_string()).await {
-                                                    Ok((user_id, auth_discord_token)) => {
-                                                        discord_token.set(auth_discord_token); // Call the success handler
-                                                        show_login_pane.set(false);
-                                                        show_discord_login_pane.set(false);
-                                                        show_discord_server_pane.set(true);
-                                                        info!("Login with captcha successful");
+                                                // match discord_api::login_request_captcha(username.to_string(), password.to_string(), trimmed_token.to_string(), captcha_rqtoken.to_string()).await {
+                                                //     Ok((user_id, auth_discord_token)) => {
+                                                //         discord_token.set(auth_discord_token); // Call the success handler
+                                                //         show_login_pane.set(false);
+                                                //         show_discord_login_pane.set(false);
+                                                //         show_discord_server_pane.set(true);
+                                                //         info!("Login with captcha successful");
 
-                                                        match discord_api::get_guilds(discord_token.to_string()).await {
-                                                            Ok((discord_guilds_response)) => {
-                                                                discord_guilds.set(discord_guilds_response); // Call the success handler
-                                                                info!("discord_guilds get successful");
-                                                            }
-                                                            Err(e) => {
-                                                                login_error.set(Some(e.to_string()));
-                                                                info!("discord_guilds get failed: {}", e);
-                                                            }
-                                                        }
-                                                    }
-                                                    Err(e) => {
-                                                        println!("something went wrong in captcha login final step");
-                                                        login_error.set(Some(e.to_string()));
-                                                        info!("Login failed: {}", e);
-                                                    }
-                                                }
+                                                //         match discord_api::get_guilds(discord_token.to_string()).await {
+                                                //             Ok((discord_guilds_response)) => {
+                                                //                 discord_guilds.set(discord_guilds_response); // Call the success handler
+                                                //                 info!("discord_guilds get successful");
+                                                //             }
+                                                //             Err(e) => {
+                                                //                 login_error.set(Some(e.to_string()));
+                                                //                 info!("discord_guilds get failed: {}", e);
+                                                //             }
+                                                //         }
+                                                //     }
+                                                //     Err(e) => {
+                                                //         println!("something went wrong in captcha login final step");
+                                                //         login_error.set(Some(e.to_string()));
+                                                //         info!("Login failed: {}", e);
+                                                //     }
+                                                // }
                                                 token // This returns `serde_json::Value`
                                             },
                                             Err(e) => {
