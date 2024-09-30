@@ -2,9 +2,9 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct User {
-    password: String,
+    pub password: String,
     pub username: String,
-    email: String,
+    pub email: String,
     slack: Slack,
     discord: Discord,
     ms_teams: MSTeams,

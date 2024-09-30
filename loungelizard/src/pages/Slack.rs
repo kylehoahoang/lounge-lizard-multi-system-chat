@@ -8,6 +8,7 @@ use std::sync::{Arc, Mutex};
 pub fn Slack() -> Element {
     // ! User Mutex Lock to access the user data
     let user_lock = use_context::<Signal<Arc<Mutex<User>>>>();
+    //let client_lock = use_context::<Signal<Arc<Mutex<Option<Client>>>>>();
     // ! ========================= ! //
     
     if let Ok(mut user_lock) = user_lock().lock() {

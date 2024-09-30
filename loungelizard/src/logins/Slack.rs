@@ -24,11 +24,6 @@ pub fn SlackLogin (show_slack_login_pane: Signal<bool>) -> Element {
         // let token = ctx.get_text().unwrap_or("".to_string());
     
         if let Ok(mut user_lock) = user_lock().lock() {
-            let new_username = "NewUsername".to_string();
-            
-            // Modify the `User` struct directly.
-            user_lock.username = new_username;
-
             println!("Updated User Data: {:#?}", user_lock);
         } else {
             println!("Failed to acquire lock on the user.");
