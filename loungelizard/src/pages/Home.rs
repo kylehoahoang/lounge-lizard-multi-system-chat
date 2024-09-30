@@ -8,6 +8,7 @@ use std::sync::{Arc, Mutex};
 use crate::logins::Discord::* ;
 use crate::logins::Slack::* ;
 use crate::logins::MSTeams::* ;
+use crate::logins::Home::* ;
 
 // Api mongo structs
 use crate::api::mongo_format::mongo_structs::*;
@@ -17,6 +18,9 @@ pub fn Home() -> Element {
    // ! User Mutex Lock to access the user data
    let user_lock = use_context::<Signal<Arc<Mutex<User>>>>();
    // ! ========================= ! //
+
+   let mut username = use_signal(|| "".to_string());
+    let mut password = use_signal(|| "".to_string());
     
     // Discord Values 
     let mut show_discord_login_pane = use_signal(|| false);
@@ -32,6 +36,8 @@ pub fn Home() -> Element {
     // MSTeams Values
     let mut show_teams_login_pane = use_signal(|| false);
     let mut teams_token = use_signal(|| "".to_string());
+
+    let mut logged_in = use_signal(|| false);
 
 
     let handle_discord_click = move |_| {
@@ -88,7 +94,11 @@ pub fn Home() -> Element {
                 class: "vertical-bar",
                 div {
                     class: {
-                        format_args!("white-square {}", if show_discord_login_pane() || show_discord_server_pane() { "opaque" } else { "transparent" })
+                        format_args!("white-square {}",
+                            if (show_discord_login_pane() || show_discord_server_pane()) && logged_in()
+                            { "opaque" } 
+                            else 
+                            { "transparent" })
                     },
                     img {
                         src: "assets/discord_logo.png",
@@ -101,7 +111,11 @@ pub fn Home() -> Element {
                 },
                 div {
                     class: {
-                        format_args!("white-square {}", if show_slack_login_pane() { "opaque" } else { "transparent" })
+                        format_args!("white-square {}", 
+                            if show_slack_login_pane() && logged_in() 
+                            { "opaque" } 
+                            else 
+                            { "transparent" })
                     },
                     img {
                         src: "assets/slack_logo.png",
@@ -115,7 +129,11 @@ pub fn Home() -> Element {
 
                 div {
                     class: {
-                        format_args!("white-square {}", if show_teams_login_pane() { "opaque" } else { "transparent" })
+                        format_args!("white-square {}",
+                            if show_teams_login_pane() && logged_in() 
+                            { "opaque" } 
+                            else 
+                            { "transparent" })
                     },
                     img {
                         src: "assets/msteams_logo.png",
@@ -132,15 +150,34 @@ pub fn Home() -> Element {
             div {
                 class: "main-content",
 
-                h1 { 
-                    class: "welcome-message", 
-                    "welcome back to lounge lizard" 
+                div { class: "space-y-50" , // Creates vertical spacing between items
+                    
+                    if !logged_in() {
+                        h1 { 
+                            class: "welcome-message", 
+                            "Welcome to Loung Lizard Chat"
+                        }
+                        
+                        HomeLogin {
+                            confirmation: logged_in.clone()
+                        }
+                    }
+                    else 
+                    {
+                        h2 { 
+                            class: "welcome-message", 
+                            "Sign in to the platforms and start chatting!"
+                        }
+                    }
+                    
                 }
                 // Sliding login pane
+                
                 div {
                     class: {
                         format_args!("login-pane {}",
-                            if show_discord_login_pane() || show_slack_login_pane() || show_teams_login_pane(){ "show" } else { "" })
+                            if (show_discord_login_pane() || show_slack_login_pane() || show_teams_login_pane()) && logged_in()
+                            { "show" } else { "" })
                     },
                     if show_discord_login_pane() {
                         DiscordLogin { 
@@ -148,19 +185,17 @@ pub fn Home() -> Element {
                             show_discord_server_pane: show_discord_server_pane.clone(), 
                             discord_token: discord_token.clone(),
                             discord_guilds: discord_guilds.clone(),
-                            //user
+                           
                         }
                     }
                     else if show_slack_login_pane() {
                         SlackLogin { 
                             show_slack_login_pane: show_slack_login_pane.clone(),
-                            //user
                         }
                     }
                     else if show_teams_login_pane() {
                         MSTeamsLogin { 
                             show_teams_login_pane: show_teams_login_pane.clone(),
-                           //user
                         }
                     }
                     

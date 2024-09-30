@@ -76,6 +76,7 @@ fn App() -> Element {
 
 
 // TODO Everything below could be moved
+
 #[component]
 fn DiscordBottomPane(show_discord_server_pane: Signal<bool>, discord_guilds: Signal<Value>, discord_token: Signal<String>) -> Element {
     let discord_guilds_array = discord_guilds().as_array().unwrap_or(&vec![]).clone();
