@@ -5,51 +5,51 @@ pub struct User {
     pub password: String,
     pub username: String,
     pub email: String,
-    slack: Slack,
-    discord: Discord,
-    ms_teams: MSTeams,
+    pub slack: Slack,
+    pub discord: Discord,
+    pub ms_teams: MSTeams,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Slack {
-    app_id: String,
-    bot: Bot,
-    client_id: String,
-    client_secret: String,
-    config_token: String,
-    oauth_url: String,
-    redirect_host: String,
-    team: Team,
-    user: SlackUser,
-    verif_token: String,
+    pub app_id: String,
+    pub bot: Bot,
+    pub client_id: String,
+    pub client_secret: String,
+    pub config_token: String,
+    pub oauth_url: String,
+    pub redirect_host: String,
+    pub team: Team,
+    pub user: SlackUser,
+    pub verif_token: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Bot {
-    token: String,
-    scope: String,
+    pub token: String,
+    pub scope: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Team {
-    name: String,
-    id: String,
+    pub name: String,
+    pub id: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct SlackUser {
-    token: String,
-    scope: String,
+    pub token: String,
+    pub scope: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Discord {
-    token: String,
+    pub token: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct MSTeams {
-    token: String,
+    pub token: String,
 }
 
 // Implement Default for User

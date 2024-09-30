@@ -78,8 +78,8 @@ pub fn HomeLogin (confirmation: Signal<bool>) -> Element {
             
             // Use `tokio::spawn` to run the async block
             block_on(async move {
-                let db = client_clone.database("MultisystemChat");
-                let user_collection = db.collection::<User>("LoungeLizard");
+                let db = client_clone.database(MONGO_DATABASE);
+                let user_collection = db.collection::<User>(MONGO_COLLECTION);
                 
                 match user_collection
                     .find_one(doc! { 

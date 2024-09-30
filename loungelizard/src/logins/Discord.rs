@@ -1,10 +1,14 @@
 use dioxus::prelude::*;
+use crate::{AppRoute, MONGO_COLLECTION, MONGO_DATABASE};
+use bson::to_bson;
 
 use crate::api::discord_api;
-use dioxus_logger::tracing::{info};
 use futures::executor::block_on;
 use serde_json::Value;
 use crate::api::mongo_format::mongo_structs::*;
+use mongodb::{sync::Client, bson::doc};
+
+use dioxus_logger::tracing::{info, error, warn};
 
 use std::sync::{Arc, Mutex};
 
@@ -20,10 +24,13 @@ pub fn DiscordLogin(
 -> Element {
     // ! User Mutex Lock to access the user data
     let user_lock = use_context::<Signal<Arc<Mutex<User>>>>();
+    let client_lock = use_context::<Signal<Arc<Mutex<Option<Client>>>>>();
     // ! ========================= ! //
 
     let mut username = use_signal(|| "".to_string());
     let mut password = use_signal(|| "".to_string());
+
+    let mut logged_in = use_signal(|| false);
 
     let mut login_error = use_signal(|| None::<String>);
 
@@ -58,6 +65,72 @@ pub fn DiscordLogin(
                 }
             }
         });
+
+        if !login_error().is_none() {return;}
+
+        let mongo_lock_copies = client_lock().clone();
+        let user_lock_copies = user_lock().clone();
+
+        let mongo_client = mongo_lock_copies.lock().unwrap();
+        let mut user = user_lock_copies.lock().unwrap();
+
+         // Clone the client if it exists (since we can't return a reference directly)
+        if let Some(client) = mongo_client.as_ref() {
+            // Convert the function into async and spawn it on the current runtime
+            let client_clone = client.clone();  // Clone the client to avoid ownership issues
+
+            // TODO Add all tokens to user profile here
+            user.discord = Discord{
+                token: "test".to_string()
+            };
+            
+            // Todo ====================================//
+
+            let user_clone = user.clone();
+            
+            // Use `tokio::spawn` to run the async block
+            block_on(async move {
+                let db = client_clone.database(MONGO_DATABASE);
+                let user_collection = db.collection::<User>(MONGO_COLLECTION);
+                
+                match to_bson(&user_clone.discord) {
+                    Ok(discord_bson) => {
+                        match user_collection
+                            .find_one_and_update(
+                                doc! { 
+                                    "$or": [{"username": &user_clone.username}, 
+                                            {"email": &user_clone.email}] 
+                                },
+                                doc! {
+                                    "$set": { "discord": discord_bson }
+                                }
+                            )
+                            .await 
+                        {
+                            Ok(Some(_)) => {
+                                // Document found and updated
+                                info!("Document updated successfully");
+                                logged_in.set(true);
+                            }
+                            Ok(None) => {
+                                // No document matched the filter
+                                warn!("Document not found");
+                            }
+                            Err(e) => {
+                                error!("Something went wrong: {:#?}", e);
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        error!("Failed to convert Slack to BSON: {:#?}", e);
+                    }
+                }
+                
+            });
+
+        } else {
+            warn!("MongoDB client not found in global state.");
+        }
     };
 
     rsx! {
@@ -103,8 +176,12 @@ pub fn DiscordLogin(
                 onclick: handle_login, "Login" 
             }
 
+            // TODO: provide custom error warnings
             if let Some(error) = login_error() {
-                p { "Login failed: {error}" }
+                p { 
+                    style: "color: white; font-family: Arial, sans-serif; font-weight: bold; text-align: center;",
+                    "Login failed: {error}" 
+                }
             }
         }
     }

@@ -1,14 +1,21 @@
 use dioxus::prelude::*;
+use bson::to_bson;
+use dioxus_elements::ms;
+use crate::{AppRoute, MONGO_COLLECTION, MONGO_DATABASE};
+
 use crate::api::mongo_format::mongo_structs::*;
+use dioxus_logger::tracing::{info, error, warn};
+use futures::executor::block_on;
+use mongodb::{sync::Client, bson::doc};
 
 use std::sync::{Arc, Mutex};
-
 
 #[component]
 pub fn MSTeamsLogin (show_teams_login_pane: Signal<bool>) -> Element {
 
    // ! User Mutex Lock to access the user data
    let user_lock = use_context::<Signal<Arc<Mutex<User>>>>();
+   let client_lock = use_context::<Signal<Arc<Mutex<Option<Client>>>>>();
    // ! ========================= ! //
 
     let mut username = use_signal(|| "".to_string());
@@ -17,16 +24,83 @@ pub fn MSTeamsLogin (show_teams_login_pane: Signal<bool>) -> Element {
     let mut logged_in = use_signal(|| false);
     let mut login_error = use_signal(|| None::<String>);
 
-    let mut username = use_signal(|| "".to_string());
-    let mut password = use_signal(|| "".to_string());
-
-    let mut new_user = use_signal(|| false);
-
     let mut login_error = use_signal(|| None::<String>);
 
     let handle_login = move |_| {
         let username = username.clone();
         let password = password.clone();
+
+
+        // TODO: Implement teams login code
+
+
+        // TODO: ========================
+        // If there is an issue, prevent the login from happening
+        if !login_error().is_none() {return;}
+
+        let mongo_lock_copies = client_lock().clone();
+        let user_lock_copies = user_lock().clone();
+
+        let mongo_client = mongo_lock_copies.lock().unwrap();
+        let mut user = user_lock_copies.lock().unwrap();
+
+         // Clone the client if it exists (since we can't return a reference directly)
+        if let Some(client) = mongo_client.as_ref() {
+            // Convert the function into async and spawn it on the current runtime
+            let client_clone = client.clone();  // Clone the client to avoid ownership issues
+
+            // TODO Add all tokens to user profile here
+            user.ms_teams = MSTeams{
+                token: "test".to_string()
+            };
+            
+            // Todo ====================================//
+
+            let user_clone = user.clone();
+            
+            // Use `tokio::spawn` to run the async block
+            block_on(async move {
+                let db = client_clone.database(MONGO_DATABASE);
+                let user_collection = db.collection::<User>(MONGO_COLLECTION);
+                
+                match to_bson(&user_clone.ms_teams) {
+                    Ok(ms_teams_bson) => {
+                        match user_collection
+                            .find_one_and_update(
+                                doc! { 
+                                    "$or": [{"username": &user_clone.username}, 
+                                            {"email": &user_clone.email}] 
+                                },
+                                doc! {
+                                    "$set": { "ms_teams": ms_teams_bson }
+                                }
+                            )
+                            .await 
+                        {
+                            Ok(Some(_)) => {
+                                // Document found and updated
+                                info!("Document updated successfully");
+                                logged_in.set(true);
+                            }
+                            Ok(None) => {
+                                // No document matched the filter
+                                warn!("Document not found");
+                            }
+                            Err(e) => {
+                                error!("Something went wrong: {:#?}", e);
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        error!("Failed to convert Slack to BSON: {:#?}", e);
+                    }
+                }
+                
+            });
+
+        } else {
+            warn!("MongoDB client not found in global state.");
+        }
 
     };
 
@@ -72,13 +146,13 @@ pub fn MSTeamsLogin (show_teams_login_pane: Signal<bool>) -> Element {
                 class: "login-button",
                 onclick: handle_login, "Login" 
             }
-            button { 
-                class: "New User",
-                onclick: handle_login, "Login" 
-            }
 
+            // TODO: provide custom error warnings
             if let Some(error) = login_error() {
-                p { "Login failed: {error}" }
+                p { 
+                    style: "color: white; font-family: Arial, sans-serif; font-weight: bold; text-align: center;",
+                    "Login failed: {error}" 
+                }
             }
         }
     }
