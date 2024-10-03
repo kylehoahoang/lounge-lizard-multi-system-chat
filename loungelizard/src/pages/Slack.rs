@@ -124,6 +124,7 @@ pub fn Slack() -> Element {
     
 
     // ! ========================= ! //
+    // ! This page will function as a backend to interpret events coming in from Slack
 
     rsx! {
         Slack_fe{}, 

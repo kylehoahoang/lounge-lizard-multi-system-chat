@@ -13,7 +13,10 @@ use tokio::sync::Mutex;
 
 
 #[component]
-pub fn MSTeamsLogin (show_teams_login_pane: Signal<bool>) -> Element {
+pub fn MSTeamsLogin (
+    show_teams_login_pane: Signal<bool>,
+    current_platform: Signal<String>,
+) -> Element {
 
    // ! User Mutex Lock to access the user data
    let user_lock = use_context::<Signal<Arc<Mutex<User>>>>();
@@ -91,6 +94,7 @@ pub fn MSTeamsLogin (show_teams_login_pane: Signal<bool>) -> Element {
                                 // Document found and updated
                                 info!("Document updated successfully");
                                 logged_in.set(true);
+                                current_platform.set("MSTeams".to_string());
                             }
                             Ok(None) => {
                                 // No document matched the filter

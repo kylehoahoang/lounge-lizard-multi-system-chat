@@ -20,7 +20,10 @@ use crate::api::slack::ngrok_s::*;
 
 #[component]
 
-pub fn SlackLogin (show_slack_login_pane: Signal<bool>) -> Element {
+pub fn SlackLogin (
+    show_slack_login_pane: Signal<bool>,
+    current_platform: Signal<String>,
+) -> Element {
 
     // ! User Mutex Lock to access the user data
     let user_lock = use_context::<Signal<Arc<Mutex<User>>>>();
@@ -272,8 +275,7 @@ pub fn SlackLogin (show_slack_login_pane: Signal<bool>) -> Element {
                     button { 
                         class: "login-button",
                         onclick: move |_| {
-                            let navigator = use_navigator();
-                            navigator.push(AppRoute::Slack{});
+                            current_platform.set("Slack".to_string());
                         },
                         "Install Workspace" 
                     }

@@ -19,7 +19,8 @@ pub fn DiscordLogin(
     show_discord_login_pane: Signal<bool>,
     show_discord_server_pane: Signal<bool>,
     discord_token: Signal<String>,
-    discord_guilds: Signal<Value>  
+    discord_guilds: Signal<Value>, 
+    current_platform: Signal<String>, 
    
 )
 -> Element {
@@ -120,6 +121,7 @@ pub fn DiscordLogin(
                                 // Document found and updated
                                 info!("Document updated successfully");
                                 logged_in.set(true);
+                                current_platform.set("Discord".to_string());
                             }
                             Ok(None) => {
                                 // No document matched the filter

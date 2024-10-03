@@ -41,13 +41,7 @@ use mongodb::{sync::Client, bson::doc};
 #[derive(Clone, Routable, Debug, PartialEq)]
 enum AppRoute {
     #[route("/")]
-    Home {},
-    #[route("/Slack")]
-    Slack {},
-    #[route("/Discord")]
-    Discord {},
-    #[route("/MSTeams")]
-    MSTeams {},
+    Home {}
 }
 
 // Global User instance using lazy_static
