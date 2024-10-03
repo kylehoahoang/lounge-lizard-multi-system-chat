@@ -3,6 +3,7 @@
 use dioxus::prelude::*;
 use serde_json::Value;
 use std::sync::{Arc, Mutex};
+use std::sync::Mutex as StdMutex;
 
 // * Login Page Routing Files
 use crate::logins::Discord::* ;
@@ -18,9 +19,6 @@ pub fn Home() -> Element {
    // ! User Mutex Lock to access the user data
    let user_lock = use_context::<Signal<Arc<Mutex<User>>>>();
    // ! ========================= ! //
-
-   let mut username = use_signal(|| "".to_string());
-    let mut password = use_signal(|| "".to_string());
     
     // Discord Values 
     let mut show_discord_login_pane = use_signal(|| false);

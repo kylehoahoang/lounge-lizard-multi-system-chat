@@ -24,7 +24,7 @@ mod logins;
 
 // * Api server files
 mod api;
-use api::discord_api;
+use api::discord::discord_api;
 use api::mongo_format::mongo_structs::*;
 use api::mongo_format::mongo_funcs::*; 
 
@@ -55,7 +55,6 @@ lazy_static! {
     static ref GLOBAL_MONGO_CLIENT: Arc<Mutex<Option<Client>>> = Arc::new(Mutex::new(None));
     
 }
-
 
 fn main() {
 
@@ -92,8 +91,8 @@ fn main() {
 fn App() -> Element {
 
     // Create a global signal for the Arc<Mutex<User>> data
-    let user_lock: Signal<Arc<Mutex<User>>> = use_signal(|| GLOBAL_USER.clone());
-    let client_lock: Signal<Arc<Mutex<Option<Client>>>> = use_signal(|| GLOBAL_MONGO_CLIENT.clone());
+    let user_lock = use_signal(|| GLOBAL_USER.clone());
+    let client_lock = use_signal(|| GLOBAL_MONGO_CLIENT.clone());
 
     provide_context(user_lock.clone());
     provide_context(client_lock.clone());

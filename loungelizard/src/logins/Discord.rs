@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 use crate::{AppRoute, MONGO_COLLECTION, MONGO_DATABASE};
 use bson::to_bson;
 
-use crate::api::discord_api;
+use crate::api::discord::discord_api;
 use futures::executor::block_on;
 use serde_json::Value;
 use crate::api::mongo_format::mongo_structs::*;

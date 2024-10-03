@@ -1,2 +1,3 @@
-pub mod discord_api; 
+pub mod discord; 
+pub mod slack;
 pub mod mongo_format;

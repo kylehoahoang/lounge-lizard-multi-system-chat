@@ -20,7 +20,7 @@ pub struct Slack {
     pub oauth_url: String,
     pub redirect_host: String,
     pub team: Team,
-    pub user: SlackUser,
+    pub user: Slack_User,
     pub verif_token: String,
 }
 
@@ -37,7 +37,7 @@ pub struct Team {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct SlackUser {
+pub struct Slack_User {
     pub token: String,
     pub scope: String,
 }
@@ -78,7 +78,7 @@ impl Default for Slack {
             oauth_url: String::new(),
             redirect_host: String::new(),
             team: Team::default(),
-            user: SlackUser::default(),
+            user: Slack_User::default(),
             verif_token: String::new(),
         }
     }
@@ -105,9 +105,9 @@ impl Default for Team {
 }
 
 // Implement Default for SlackUser
-impl Default for SlackUser {
+impl Default for Slack_User {
     fn default() -> Self {
-        SlackUser {
+        Slack_User {
             token: String::new(),
             scope: String::new(),
         }
