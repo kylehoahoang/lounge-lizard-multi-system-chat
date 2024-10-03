@@ -11,6 +11,9 @@ use tokio::runtime::Runtime;
 use futures_util::StreamExt;
 use chrono::{DateTime, Utc, NaiveDateTime};
 
+// * Front End Files
+mod front_ends;
+use front_ends::Slack::*;
 
 // * Regular Page Routing Files 
 mod pages;
@@ -50,11 +53,7 @@ enum AppRoute {
 // Global User instance using lazy_static
 lazy_static! {
     static ref GLOBAL_USER: Arc<Mutex<User>> = Arc::new(Mutex::new(User::default()));
-}
-
-lazy_static! {
     static ref GLOBAL_MONGO_CLIENT: Arc<Mutex<Option<Client>>> = Arc::new(Mutex::new(None));
-    
 }
 
 fn main() {

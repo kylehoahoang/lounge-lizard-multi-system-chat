@@ -42,10 +42,10 @@ pub async fn request_consumer(
     user_lock: Arc<Mutex<User>>,
     client_lock: Arc<Mutex<Option<Client>>>,
     // TODO Intake an instance or modifiable of the UI
-)-> Result<Response<BoxBody<Bytes, Infallible>>, Box<dyn std::error::Error + Send + Sync>> {
+)-> Result<serde_json::Value, Box<dyn std::error::Error + Send + Sync>> {
     // This is a loop that will run indefinitely
     // Its purpose is to process any incoming requests we have
-    loop {
+   
         // First, we need to check if there are any requests waiting
         // We do this by locking the queue and checking its length
         // If there are requests waiting, we pop the last one from the queue
@@ -66,8 +66,7 @@ pub async fn request_consumer(
         if let Some(request) = request {
             // We call request_server with the request as an argument
             // This will do something with the request, like respond to it
-            // TODO Pass in an instance of the UI
-            request_server(request).await;
+            return Ok(request);
         }
         // If there were no requests waiting, we just sleep for a second
         else {
@@ -83,7 +82,7 @@ pub async fn request_consumer(
 
             let mut user = user_lock.lock().await;
             
-            let client  = SlackClient::new(SlackClientHyperConnector::new()?);
+            let client  = SlackClient::new(SlackClientHyperConnector::new().expect("Failed to create client"));
 
             // We need to handle the installation request
             let temp_code = SlackOAuthCode::new(code.to_string());
@@ -140,11 +139,13 @@ pub async fn request_consumer(
                                     }
                                     Err(e) => {
                                         error!("Something went wrong: {:#?}", e);
+                                        return Err(Box::new(e)); // Convert to Box
                                     }
                                 }
                             }
                             Err(e) => {
                                 error!("Failed to convert Slack to BSON: {:#?}", e);
+                                return Err(Box::new(e)); // Convert to Box
                             }
                         }
                         
@@ -159,9 +160,7 @@ pub async fn request_consumer(
 
             *temp_code_lock = None;
         }
-
-        
-    }
+        return Ok(Value::Null);
 }
 // 
 

@@ -10,7 +10,7 @@ use slack_morphism::prelude::*;
 /// This function is called by `request_consumer` in an infinite loop.
 /// It will process any incoming requests we have by calling `request_server`
 /// with the request as an argument.
-pub async fn request_server(
+pub fn request_server(
     json_value: Value
     // TODO Intake an instance or modifiable of the UI
 ) 

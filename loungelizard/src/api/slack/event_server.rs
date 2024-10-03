@@ -1,5 +1,7 @@
 use std::borrow::Borrow;
+use dioxus:: prelude::*;
 use std::sync::{Arc};
+use dioxus::hooks::Coroutine;
 use tokio::sync::Mutex;
 use hyper::service::service_fn;
 use hyper_util::rt::TokioIo;
@@ -14,15 +16,13 @@ use futures::executor::block_on;
 
 // Imported internal files
 use crate::api::slack::{self, server_utils::*};
-use crate::api::slack::config_env::config_env_var;
+use crate::api::slack::server_utils::coroutine_enums::Action;
 
 #[derive(Debug)]
 struct UserStateExample(u64);
 
 pub async fn events_api(
-    slack_manifest: Option<SlackAppManifest>,
     user_lock: Arc<Mutex<User>>,
-    client_lock: Arc<Mutex<Option<Client>>>,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     
     let client: Arc<SlackHyperClient> =
@@ -34,17 +34,8 @@ pub async fn events_api(
     // We log the address that we're listening on
     info!("Loading server: {}", addr);
 
-    // Clone the Arc for use in the async task
-    let user_lock_new = Arc::clone(&user_lock);
-    let client_lock_new = Arc::clone(&client_lock);
-
     // We spawn an async task that will run our request consumer
     // The request consumer is a function that will continuously process any incoming requests
-    tokio::spawn(async move {
-        // We call the request_consumer function and await its result
-        // If anything goes wrong, we'll get an error here
-        let _ = main_events::request_consumer(user_lock_new, client_lock_new ).await;  
-    });
 
     // Clone the configuration for the push events listener
     let push_events_config = Arc::new(SlackPushEventsListenerConfig::new(
