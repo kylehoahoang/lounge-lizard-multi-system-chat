@@ -29,7 +29,8 @@ use api::mongo_format::mongo_structs::*;
 use api::mongo_format::mongo_funcs::*; 
 
 use lazy_static::lazy_static;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc};
+use tokio::sync::Mutex;
 
 use mongodb::{sync::Client, bson::doc};
 
@@ -66,7 +67,10 @@ fn main() {
 
     match client_result {
         Ok(Some(client)) => {
-            let mut global_client = GLOBAL_MONGO_CLIENT.lock().unwrap(); // Lock the mutex
+            let mut global_client = block_on(async {
+                GLOBAL_MONGO_CLIENT.lock().await
+            });
+            //let mut global_client = GLOBAL_MONGO_CLIENT.lock().unwrap(); // Lock the mutex
             *global_client = Some(client); // Update the client inside the mutex
             info!("MongoDB client set successfully in global state.");
         }

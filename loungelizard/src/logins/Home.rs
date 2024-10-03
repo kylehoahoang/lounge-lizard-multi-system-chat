@@ -11,7 +11,8 @@ use crate::api::mongo_format::mongo_funcs::*;
 use mongodb::{sync::Client, error::Result as MongoResult, bson::doc};
 use dioxus_logger::tracing::{info, error, Level};
 
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc};
+use tokio::sync::Mutex;
 use regex::Regex;
 
 #[component]
@@ -61,8 +62,15 @@ pub fn HomeLogin (confirmation: Signal<bool>) -> Element {
         let mongo_lock_copies = client_lock().clone();
         let user_lock_copies = user_lock().clone();
 
-        let mongo_client = mongo_lock_copies.lock().unwrap();
-        let mut user = user_lock_copies.lock().unwrap();
+        let mongo_client = block_on(async {
+            mongo_lock_copies.lock().await
+        });
+
+        let mut user = block_on(
+            async{
+                user_lock_copies.lock().await
+            }
+        );
 
          // Clone the client if it exists (since we can't return a reference directly)
         if let Some(client) = mongo_client.as_ref() {
@@ -120,18 +128,26 @@ pub fn HomeLogin (confirmation: Signal<bool>) -> Element {
         let mongo_lock_copies = client_lock().clone();
         let user_lock_copies = user_lock().clone();
 
-        let mongo_client = mongo_lock_copies.lock().unwrap();
+        let mongo_client = block_on(async {
+            mongo_lock_copies.lock().await
+        });
 
+        let mut user = block_on(async{
+            user_lock_copies.lock().await
+        }); 
+    
          // Clone the client if it exists (since we can't return a reference directly)
         if let Some(client) = mongo_client.as_ref() {
             // Convert the function into async and spawn it on the current runtime
             let client_clone = client.clone();  // Clone the client to avoid ownership issues
 
+            
+
             // Use `tokio::spawn` to run the async block
             block_on(async move {
                 let db = client_clone.database("MultisystemChat");
                 let user_collection = db.collection::<User>("LoungeLizard");
-                let mut user = user_lock_copies.lock().unwrap(); // Lock user here for async access
+                // Lock user here for async access
                 
                 match user_collection
                     .find_one(doc! {

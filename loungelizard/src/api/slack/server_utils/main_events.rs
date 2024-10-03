@@ -1,10 +1,10 @@
 
-
+use bson::to_bson;
 use bytes::Bytes;
 use http_body_util::combinators::BoxBody;
 use http_body_util::{BodyExt, Full};
 use hyper::body::Incoming;
-use hyper::{Method,Request, Response, StatusCode};
+use hyper::{client, Method, Request, Response, StatusCode};
 use serde_json::Value;
 use tokio::time::{self, Duration};
 use std::sync::{Arc};
@@ -15,9 +15,13 @@ use std::env::{self, set_var};
 use url::form_urlencoded;
 use dioxus_logger::tracing::{debug, error, warn, info, Level};
 use slack_morphism::prelude::*;
-use crate::api::slack::config_env::config_env_var;
 use crate::api::slack::server_utils::request_server::request_server;
 use crate::api::mongo_format::mongo_structs::*;
+
+use mongodb::{sync::Client, bson::doc};
+use crate::api::mongo_format::mongo_funcs::*; 
+
+
 // Import the necessary error handling types
 // Define the global queue as a Mutex wrapped around a vector of QueueItem
 lazy_static::lazy_static! {
@@ -33,8 +37,10 @@ lazy_static::lazy_static! {
 /// second before checking again.
 ///
 /// This function is called in an infinite loop in `main_events`.
+
 pub async fn request_consumer(
-    mut user: &mut User
+    user_lock: Arc<Mutex<User>>,
+    client_lock: Arc<Mutex<Option<Client>>>,
     // TODO Intake an instance or modifiable of the UI
 )-> Result<Response<BoxBody<Bytes, Infallible>>, Box<dyn std::error::Error + Send + Sync>> {
     // This is a loop that will run indefinitely
@@ -61,7 +67,6 @@ pub async fn request_consumer(
             // We call request_server with the request as an argument
             // This will do something with the request, like respond to it
             // TODO Pass in an instance of the UI
-            
             request_server(request).await;
         }
         // If there were no requests waiting, we just sleep for a second
@@ -75,6 +80,8 @@ pub async fn request_consumer(
 
         if let Some(code) = &*temp_code_lock {
             info!("Code received: {}", code);
+
+            let mut user = user_lock.lock().await;
             
             let client  = SlackClient::new(SlackClientHyperConnector::new()?);
 
@@ -101,6 +108,48 @@ pub async fn request_consumer(
                     user.slack.user.token   = oauth_response.authed_user.access_token.unwrap().to_string();
                     user.slack.user.scope   = oauth_response.authed_user.scope.unwrap().to_string();
                     //user.slack.user.      = oauth_response.authed_user.id.to_string();
+                    let client_clone = client_lock.lock().await;
+
+                    if let Some(client) = client_clone.as_ref() {
+                        let user_clone = user.clone();
+
+                        let db = client.database(MONGO_DATABASE);
+                        let user_collection = db.collection::<User>(MONGO_COLLECTION);
+
+                        match to_bson(&user_clone.slack) {
+                            Ok(slack_bson) => {
+                                match user_collection
+                                    .find_one_and_update(
+                                        doc! { 
+                                            "$or": [{"username": &user_clone.username}, 
+                                                    {"email": &user_clone.email}] 
+                                        },
+                                        doc! {
+                                            "$set": { "slack": slack_bson }
+                                        }
+                                    )
+                                    .await 
+                                {
+                                    Ok(Some(_)) => {
+                                        // Document found and updated
+                                        info!("Document updated successfully");
+                                    }
+                                    Ok(None) => {
+                                        // No document matched the filter
+                                        warn!("Document not found");
+                                    }
+                                    Err(e) => {
+                                        error!("Something went wrong: {:#?}", e);
+                                    }
+                                }
+                            }
+                            Err(e) => {
+                                error!("Failed to convert Slack to BSON: {:#?}", e);
+                            }
+                        }
+                        
+                    }    
+                    
             
                 }
                 Err(e) => {

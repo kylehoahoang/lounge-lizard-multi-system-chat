@@ -1,9 +1,18 @@
 #![allow(non_snake_case)]
 
 use dioxus::prelude::*;
+use slack_morphism::prelude::*;
 use serde_json::Value;
-use std::sync::{Arc, Mutex};
-use std::sync::Mutex as StdMutex;
+use std::sync::{Arc};
+use tokio::sync::Mutex;
+use futures::executor::block_on;
+use std::fs;
+use url::Url;
+use crate::api::slack::ngrok_s::*;
+use crate::api::slack::server_utils::setup_server::update_server;
+use dioxus_logger::tracing::{info, error, warn};
+use crate::{AppRoute};
+
 
 // * Login Page Routing Files
 use crate::logins::Discord::* ;
@@ -19,6 +28,8 @@ pub fn Home() -> Element {
    // ! User Mutex Lock to access the user data
    let user_lock = use_context::<Signal<Arc<Mutex<User>>>>();
    // ! ========================= ! //
+
+   let user_lock_clone = Arc::clone(&user_lock());
     
     // Discord Values 
     let mut show_discord_login_pane = use_signal(|| false);
@@ -39,6 +50,7 @@ pub fn Home() -> Element {
 
 
     let handle_discord_click = move |_| {
+
         if discord_token.to_string() == ""{
             show_discord_login_pane.set(!show_discord_login_pane());
 
@@ -52,7 +64,13 @@ pub fn Home() -> Element {
     };
 
     let handle_slack_click = move |_| {
-        if slack_token.to_string() == "" {
+
+        let user = block_on(async {
+            user_lock_clone.lock().await
+        });
+
+        // Check if the app id has been set, this means the user has logged in
+        if user.slack.app_id == "" {
             show_slack_login_pane.set(!show_slack_login_pane());
 
             // Set Other tokens to false
@@ -61,6 +79,13 @@ pub fn Home() -> Element {
             
         }
         else {
+            
+            let _ = block_on( async {
+                update_server(user.clone()).await
+            });
+            
+            let navigator = use_navigator();
+                navigator.push(AppRoute::Slack{});
 
         }
        

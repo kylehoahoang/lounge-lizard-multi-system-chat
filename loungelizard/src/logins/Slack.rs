@@ -9,7 +9,9 @@ use dioxus_logger::tracing::{info, error, warn};
 use futures::executor::block_on;
 use mongodb::{sync::Client, bson::doc};
 
-use std::sync::{Arc, Mutex}; 
+use std::sync::{Arc};
+use tokio::sync::Mutex;
+
 use std::fs;
 use url::Url; 
 
@@ -137,8 +139,18 @@ pub fn SlackLogin (show_slack_login_pane: Signal<bool>) -> Element {
         let mongo_lock_copies = client_lock().clone();
         let user_lock_copies = user_lock().clone();
 
-        let mongo_client = mongo_lock_copies.lock().unwrap();
-        let mut user = user_lock_copies.lock().unwrap();
+        let mongo_client = block_on(
+            async {
+                mongo_lock_copies.lock().await
+            }
+        );
+
+        let mut user = block_on(
+            async {
+                user_lock_copies.lock().await
+            }
+        );
+        
 
          // Clone the client if it exists (since we can't return a reference directly)
         if let Some(client) = mongo_client.as_ref() {
@@ -156,7 +168,6 @@ pub fn SlackLogin (show_slack_login_pane: Signal<bool>) -> Element {
                 client_secret: client_secret().to_string(),
                 config_token: config_token().to_string(),
                 oauth_url: oauth_url().to_string(),
-                redirect_host: redirect_host().to_string(),
                 team: Team {
                     id: "".to_string(),
                     name: "".to_string(),

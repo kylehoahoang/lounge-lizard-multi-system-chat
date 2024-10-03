@@ -1,5 +1,6 @@
 use std::borrow::Borrow;
-use std::sync::Arc;
+use std::sync::{Arc};
+use tokio::sync::Mutex;
 use hyper::service::service_fn;
 use hyper_util::rt::TokioIo;
 use tokio::net::TcpListener;
@@ -20,7 +21,8 @@ struct UserStateExample(u64);
 
 pub async fn events_api(
     slack_manifest: Option<SlackAppManifest>,
-    mut user: &User
+    user_lock: Arc<Mutex<User>>,
+    client_lock: Arc<Mutex<Option<Client>>>,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     
     let client: Arc<SlackHyperClient> =
@@ -31,29 +33,35 @@ pub async fn events_api(
 
     // We log the address that we're listening on
     info!("Loading server: {}", addr);
-    let mut user_ = user.clone();
+
+    // Clone the Arc for use in the async task
+    let user_lock_new = Arc::clone(&user_lock);
+    let client_lock_new = Arc::clone(&client_lock);
 
     // We spawn an async task that will run our request consumer
     // The request consumer is a function that will continuously process any incoming requests
     tokio::spawn(async move {
         // We call the request_consumer function and await its result
         // If anything goes wrong, we'll get an error here
-        let _ = main_events::request_consumer(&mut user_).await; 
+        let _ = main_events::request_consumer(user_lock_new, client_lock_new ).await;  
     });
 
     // Clone the configuration for the push events listener
     let push_events_config = Arc::new(SlackPushEventsListenerConfig::new(
-        user.slack.verif_token.clone().into(),
+        user_lock.lock().await.slack.verif_token.clone().into(),
+        
     ));
 
     // Clone the configuration for the interaction events listener
     let interactions_events_config = Arc::new(SlackInteractionEventsListenerConfig::new(
-        user.slack.verif_token.clone().into(),
+        user_lock.lock().await.slack.verif_token.clone().into(),
+        
     ));
 
     // Clone the configuration for the command events listener
     let command_events_config = Arc::new(SlackCommandEventsListenerConfig::new(
-        user.slack.verif_token.clone().into(),
+        user_lock.lock().await.slack.verif_token.clone().into(),
+         
     ));
 
     // Create a new environment for the listeners

@@ -8,7 +8,8 @@ use dioxus_logger::tracing::{info, error, warn};
 use futures::executor::block_on;
 use mongodb::{sync::Client, bson::doc};
 
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc};
+use tokio::sync::Mutex;
 
 
 #[component]
@@ -42,9 +43,17 @@ pub fn MSTeamsLogin (show_teams_login_pane: Signal<bool>) -> Element {
         let mongo_lock_copies = client_lock().clone();
         let user_lock_copies = user_lock().clone();
 
-        let mongo_client = mongo_lock_copies.lock().unwrap();
-        let mut user = user_lock_copies.lock().unwrap();
+        let mongo_client = block_on(
+            async {
+                mongo_lock_copies.lock().await
+            }
+        );
 
+        let mut user = block_on(
+            async {
+                user_lock_copies.lock().await
+            }
+        );
          // Clone the client if it exists (since we can't return a reference directly)
         if let Some(client) = mongo_client.as_ref() {
             // Convert the function into async and spawn it on the current runtime

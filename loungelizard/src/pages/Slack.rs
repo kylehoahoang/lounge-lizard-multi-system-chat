@@ -7,8 +7,11 @@ use mongodb::{sync::Client, bson::doc};
 use crate::api::mongo_format::mongo_structs::*;
 use crate::api::slack::event_server::*;
 use crate::api::slack::{self, server_utils::*};
-use std::sync::{Arc, Mutex};
+
 use futures_util::StreamExt;
+
+use std::sync::{Arc};
+use tokio::sync::Mutex;
 
 #[derive(Debug)]
 struct UserStateExample(u64);
@@ -27,15 +30,21 @@ pub fn Slack() -> Element {
     let client_lock = use_context::<Signal<Arc<Mutex<Option<Client>>>>>();
 
     // Lock the user context and clone it for async context
-    let user = {
-        let user_clone = user_lock().clone();
-        let user_guard = user_clone.lock().unwrap();
-        user_guard.clone()
+    let user_lock_new = Arc::clone(&user_lock());
+    let client_lock_new = Arc::clone(&client_lock());
+    let user_lock_verify = Arc::clone(&user_lock());
+
+    let handle_click = move |_|{
+        let mut user = block_on(async{
+            user_lock_verify.lock().await
+        });
+
+        println!("User: {:?}", user);
     };
 
     use_effect({
         tokio::spawn(async move {
-            let _ = events_api(None, &user).await;
+            let _ = events_api(None, user_lock_new, client_lock_new).await;
         });
 
         // Return a cleanup function if needed (none in this case)
@@ -58,9 +67,7 @@ pub fn Slack() -> Element {
     rsx! { 
         button { 
             class: "login-button",
-            onclick: move |_| {
-                println!("User: {:#?}", user_lock().clone().lock().unwrap().slack);
-            },
+            onclick: handle_click,
             "Install Workspace" 
         }
     }

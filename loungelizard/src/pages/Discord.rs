@@ -2,8 +2,8 @@ use dioxus::prelude::*;
 
 // Api mongo structs
 use crate::api::mongo_format::mongo_structs::*;
-use std::sync::{Arc, Mutex};
-use std::sync::Mutex as StdMutex;
+use std::sync::{Arc};
+use tokio::sync::Mutex;
 #[component]
 pub fn Discord() -> Element {
    // ! User Mutex Lock to access the user data
