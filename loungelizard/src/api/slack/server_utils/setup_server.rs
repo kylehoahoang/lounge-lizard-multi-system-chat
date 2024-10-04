@@ -1,13 +1,20 @@
 
 use slack_morphism::prelude::*;
+use tracing::Value;
 use std::fs;
 use url::Url;
 use crate::api::slack::ngrok_s::*;
 use dioxus_logger::tracing::{info, error, warn};
 use crate::api::mongo_format::mongo_structs::*;
+use std::process::{Command, Child, Stdio};
+use reqwest::Error;
+use std::sync::{Arc};
+use tokio::sync::Mutex;
 
 
-pub async fn update_server(user: User) {
+pub async fn start_endpoint(
+    user: User,
+) -> Result<SlackAppManifest, Box<dyn std::error::Error>> {
     // Define the path to the JSON file
     let file_path = "src/api/slack/manifest/manifest.json";
 
@@ -17,20 +24,43 @@ pub async fn update_server(user: User) {
     // Parse the manifest file into a `SlackAppManifest` struct
     let mut manifest_struct: SlackAppManifest = serde_json::from_str(&manifest_file).expect("Unable to parse JSON");
 
-    // Create a new Slack client
-    let client  = SlackClient::new(SlackClientHyperConnector::new().expect("failed to create hyper connector"));
+    // Try to fetch ngrok tunnels
+    let response = match fetch_ngrok_tunnels().await {
+        Ok(response) => {
+            info!("Fetched ngrok tunnels successfully.");
+            response
+        },
+        Err(err) => {
+            info!("Failed to fetch ngrok tunnels: {}. Attempting to start ngrok session...", err);
 
-    let user_temp = user.clone(); 
-    // Create a new token from the environment variable `SLACK_CONFIG_TOKEN`
-    let token: SlackApiToken = SlackApiToken::new(user_temp.slack.config_token.into());
+            // Attempt to start the ngrok session
+            match ngrok_start_session("8080") {
+                Ok(child) => {
+                    info!("ngrok session started successfully.");
 
-    // Create a new session with the client and the token
-    let session = client.open_session(&token);
+                    // Wait for a brief period to allow ngrok to start
+                    tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
 
-    let _ = ngrok_start_session("8080");
-
-    let response = fetch_ngrok_tunnels().await.expect("failed");
-
+                    // Retry fetching ngrok tunnels
+                    match fetch_ngrok_tunnels().await {
+                        Ok(response) => {
+                            info!("Successfully fetched ngrok tunnels after starting session.");
+                            response // Return this response
+                        },
+                        Err(err) => {
+                            // If we fail again, log and return the error
+                            info!("Failed to fetch ngrok tunnels after starting session: {}", err);
+                            return Err(Box::new(err)); // Return the error wrapped in Box
+                        }
+                    }
+                },
+                Err(start_err) => {
+                    info!("Failed to start ngrok session: {}", start_err);
+                    return Err(Box::new(start_err)); // Return the error wrapped in Box
+                }
+            }
+        }
+    };
 
     let mut redirect_url = String::new();
     // Extract the public URL from the first active tunnel
@@ -61,17 +91,116 @@ pub async fn update_server(user: User) {
 
     if let Some(ref mut oauth_config) = manifest_struct.oauth_config {
         if let Some(ref mut redir_urls) = oauth_config. redirect_urls{
-        // Update the redirect URLs to contain only the public URL
-        *redir_urls = vec![(Url::parse(redirect_url.as_str()).expect("Failed to parse URL"))];
+            // Update the redirect URLs to contain only the public URL
+            *redir_urls = vec![(Url::parse(redirect_url.as_str()).expect("Failed to parse URL"))];
         }
     }
 
-    // Create a new app with the updated manifest
+    Ok(manifest_struct)
+   
+}
+
+pub async fn update_slack_app(
+    user: User,
+) -> Result<(), Box<dyn std::error::Error>> 
+{
+    let user_c = user.clone();
+
+    // Create a new Slack client 
+    let client  = SlackClient::new(SlackClientHyperConnector::new().expect("failed to create hyper connector"));
+
+    let user_temp = user.clone(); 
+    // Create a new token from the environment variable `SLACK_CONFIG_TOKEN`
+    let token: SlackApiToken = SlackApiToken::new(user_temp.slack.config_token.into());
+
+    // Create a new session with the client and the token
+    let session = client.open_session(&token);
+
+    // Start server to generate a app manifest structure 
+    let manifest_struct = match start_endpoint(user_c).await
+    {
+        Ok(manifest) => manifest,
+        Err(err) => return Err(err),
+    };
+
+    // Update existing app
     let updated_app = SlackApiAppsManifestUpdateRequest::new(
         user.slack.app_id.clone().into(),
         manifest_struct.clone()
     );
 
-    let _updated_response = 
-        session.apps_manifest_update(&updated_app).await.expect("failed to update app");
+    return match session.apps_manifest_update(&updated_app).await {
+        Ok(_response) => Ok(()),
+        Err(err) => Err(Box::new(err) as Box<dyn std::error::Error>),
+    };
+
+
+}
+
+
+pub async fn create_slack_app(
+    user_lock: Arc<Mutex<User>>,
+    config_token: String,
+) -> Result<(), Box<dyn std::error::Error>> 
+{
+    let mut user = user_lock.lock().await; 
+    let user_c = user.clone();
+    
+    let config_token = match config_token.starts_with("xoxe.xoxp") {
+        true => {
+            // If the token starts with the correct prefix, continue without changing anything
+            config_token
+        },
+        false => {
+            // If the token does not start with the correct prefix, return an error
+            match config_token.as_str() {
+                "\n" => {
+                    // If the token is empty, return an error
+                    return Err("Nothing in Clipboard".into());
+                },
+                _ => {
+                    // If the token is empty, return an error
+                    return Err("Incorrect token".into());
+                }
+            }
+        }
+    };
+
+    // Create a new Slack client 
+    let client  = SlackClient::new(SlackClientHyperConnector::new().expect("failed to create hyper connector"));
+
+    // Create a new token using config_token
+    let token: SlackApiToken = SlackApiToken::new(config_token.clone().into());
+
+    // Create a new session with the client and the token
+    let session = client.open_session(&token);
+
+    // Start server to generate a app manifest structure 
+    let manifest_struct = match start_endpoint(user_c).await
+    {
+        Ok(manifest) => manifest,
+        Err(err) => return Err(err),
+    };
+
+    // Create a new app with the updated manifest
+    let new_app: SlackApiAppsManifestCreateRequest = SlackApiAppsManifestCreateRequest::new(
+        SlackAppId::new("-".into()),
+        manifest_struct.clone()
+    );
+
+    // Create the app
+    return match session.apps_manifest_create(&new_app).await
+    {
+        Ok(response) => {
+            // Set Env vars without manually inputting them 
+            user.slack.client_id = response.credentials.client_id.to_string();
+            user.slack.client_secret = response.credentials.client_secret.to_string();
+            user.slack.verif_token = response.credentials.verification_token.to_string();
+            user.slack.oauth_url = response.oauth_authorize_url.to_string();
+            user.slack.config_token = config_token;
+            Ok(())
+        }
+        Err(err) => Err(Box::new(err) as Box<dyn std::error::Error>),
+    }
+
 }

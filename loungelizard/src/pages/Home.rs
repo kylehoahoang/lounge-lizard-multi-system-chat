@@ -9,7 +9,7 @@ use futures::executor::block_on;
 use std::{fs, result};
 use url::Url;
 use crate::api::slack::ngrok_s::*;
-use crate::api::slack::server_utils::setup_server::update_server;
+use crate::api::slack::server_utils::setup_server::*;
 use dioxus_logger::tracing::{info, error, warn};
 use crate::{AppRoute};
 
@@ -91,11 +91,10 @@ pub fn Home() -> Element {
             show_teams_login_pane.set(false);
             
         }
-        else if (current_platform().to_string() != "Slack") {
+        else if current_platform().to_string() != "Slack" {
 
             let result = block_on( async {
-                update_server(user.clone()).await;
-                Ok::<(), Box<dyn std::error::Error>>(())
+                update_slack_app(user.clone()).await
             });
 
             match result {
@@ -219,7 +218,7 @@ pub fn Home() -> Element {
                                 MSTeams_p{}
                             }
                             else if current_platform().to_string() == "Slack" {
-                                Slack_p{}
+                                Slack_p{current_platform: current_platform.clone()}
                             }
                             else{
                                 h2 { 

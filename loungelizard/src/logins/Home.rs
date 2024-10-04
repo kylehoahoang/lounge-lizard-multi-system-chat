@@ -165,6 +165,7 @@ pub fn HomeLogin (confirmation: Signal<bool>) -> Element {
                        *user = logged_user;
                     }
                     Ok(None) => {
+                        login_error.set(Some("User not found".to_string()));
                         warn!("Passoword is incorrect");
                     }
                     Err(e) => {
@@ -364,8 +365,13 @@ pub fn HomeLogin (confirmation: Signal<bool>) -> Element {
                 } 
             
             }
+            // TODO: provide custom error warnings
             if let Some(error) = login_error() {
-                p { "Login failed: {error}" }
+                
+                p { 
+                    style: "color: white; font-family: Arial, sans-serif; font-weight: bold; text-align: center;",
+                    "{error}" 
+                }
             }
         
         }

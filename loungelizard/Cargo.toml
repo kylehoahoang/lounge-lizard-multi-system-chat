@@ -38,8 +38,8 @@ hyper-util = { version = "0.1", features = ["client", "client-legacy", "server"]
 tracing = "0.1"
 dotenv = "0.15.0"
 url = "2.5.2"
-ring = "0.17.8"
-aws-lc-rs = { version = "1", features = ["bindgen"] }
+#ring = "0.17.8"
+#aws-lc-rs = { version = "1", features = ["bindgen"] }
 
 
 [dependencies.mongodb]

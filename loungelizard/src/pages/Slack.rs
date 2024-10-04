@@ -15,15 +15,14 @@ use futures_util::StreamExt;
 use serde_json::Value;
 
 use std::sync::{Arc};
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, oneshot};
 
 #[derive(Debug)]
 struct UserStateExample(u64);
-
-use crate::api::slack::server_utils::coroutine_enums::Action;
+struct EmptyStruct {}
 
 #[component]
-pub fn Slack() -> Element {
+pub fn Slack(current_platform: Signal<String>,) -> Element {
     // ! User Mutex Lock to access the user data
     let user_lock = use_context::<Signal<Arc<Mutex<User>>>>();
     let client_lock = use_context::<Signal<Arc<Mutex<Option<Client>>>>>();
@@ -34,16 +33,23 @@ pub fn Slack() -> Element {
     let client_lock_new = Arc::clone(&client_lock());
     let user_lock_new = Arc::clone(&user_lock());
 
+     // Create a oneshot channel to signal the task to stop
+     let (stop_tx, stop_rx) = oneshot::channel();
+
     // ! These signals control the front end of the page 
 
     // ! ======================== ! //
 
-    struct EmptyStruct {}
-
     let consumer = use_coroutine::<EmptyStruct,_,_>(|_rx| {
         async move {
             loop{
-                
+                // Gracefully exit the loop if the platform is not Slack
+                if !current_platform().eq("Slack") {
+                    // Send the stop signal when needed
+                    stop_tx.send(()).unwrap();
+                    break;
+                }
+                    
                 let json_response = 
                     main_events::request_consumer(user_lock_new.clone(), client_lock_new.clone()).await;
 
@@ -107,14 +113,25 @@ pub fn Slack() -> Element {
                     }
                 }
             }
+            info!("Consumer loop ended");
         }
     });
 
 
     use_effect({
-        // Step 2: Start function that will retrieve request and store them in a queue
+        // // Step 2: Start function that will retrieve request and store them in a queue
+        // tokio::spawn(async move {
+        //     let _ = events_api(user_lock_api).await;
+        // });
+
+        // Spawn the task with a signal to stop
         tokio::spawn(async move {
-            let _ = events_api(user_lock_api).await;
+            tokio::select! {
+                _ = events_api(user_lock_api) => {},
+                _ = stop_rx => {
+                    info!("Stopping request endpoint");
+                }
+            }
         });
     
         // Return a cleanup function if needed (none in this case)

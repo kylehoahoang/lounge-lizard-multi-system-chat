@@ -111,17 +111,26 @@ pub fn ngrok_kill_session(child: &mut Child) -> io::Result<()> {
 /// If the request is successful and the response body can be parsed as JSON, the function returns the parsed JSON `Value`.
 /// If any error occurs, the function returns an `Error`.
 pub async fn fetch_ngrok_tunnels() -> Result<Value, Error> {
-    // Send a GET request to the ngrok API at the URL specified in the `NGROK_TUNNEL_SEARCH` constant
-    let response = reqwest::get(NGROK_TUNNEL_SEARCH)
-        .await?;
+    //Send a GET request to the ngrok API at the URL specified in the `NGROK_TUNNEL_SEARCH` constant
+    let response = 
+        match reqwest::get(NGROK_TUNNEL_SEARCH).await
+        {
+            Ok(response) => response,
+            Err(err) => {
+                warn!("Ngrok Tunnel is not Up: {}", err);
+                return Err(err);
+            }
+        };
 
     // Attempt to parse the response body as JSON
     let json_value = response
         .json::<Value>()
-        .await?;
+        .await;
 
-    // If the JSON parsing was successful, return the parsed JSON `Value`
-    Ok(json_value)
+    match json_value {
+        Ok(json) => Ok(json),
+        Err(err) => Err(err),
+    }
 }
 
 
