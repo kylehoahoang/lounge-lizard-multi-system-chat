@@ -91,7 +91,7 @@ pub fn DiscordLogin(
 
             // TODO Add all tokens to user profile here
             user.discord = Discord{
-                token: "test".to_string()
+                token: discord_token.to_string()
             };
             
             // Todo ====================================//

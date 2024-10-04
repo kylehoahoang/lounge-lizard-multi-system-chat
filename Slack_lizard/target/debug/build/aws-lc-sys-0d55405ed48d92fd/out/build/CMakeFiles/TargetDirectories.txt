@@ -1,0 +1,13 @@
+C:/Users/sorry/Desktop/Discord Engineering/design2_discord_kyle_branch/Slack_lizard/target/debug/build/aws-lc-sys-0d55405ed48d92fd/out/build/CMakeFiles/rust_wrapper.dir
+C:/Users/sorry/Desktop/Discord Engineering/design2_discord_kyle_branch/Slack_lizard/target/debug/build/aws-lc-sys-0d55405ed48d92fd/out/build/CMakeFiles/INSTALL.dir
+C:/Users/sorry/Desktop/Discord Engineering/design2_discord_kyle_branch/Slack_lizard/target/debug/build/aws-lc-sys-0d55405ed48d92fd/out/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/sorry/Desktop/Discord Engineering/design2_discord_kyle_branch/Slack_lizard/target/debug/build/aws-lc-sys-0d55405ed48d92fd/out/build/CMakeFiles/ZERO_CHECK.dir
+C:/Users/sorry/Desktop/Discord Engineering/design2_discord_kyle_branch/Slack_lizard/target/debug/build/aws-lc-sys-0d55405ed48d92fd/out/build/aws-lc/CMakeFiles/boringssl_prefix_symbols.dir
+C:/Users/sorry/Desktop/Discord Engineering/design2_discord_kyle_branch/Slack_lizard/target/debug/build/aws-lc-sys-0d55405ed48d92fd/out/build/aws-lc/CMakeFiles/INSTALL.dir
+C:/Users/sorry/Desktop/Discord Engineering/design2_discord_kyle_branch/Slack_lizard/target/debug/build/aws-lc-sys-0d55405ed48d92fd/out/build/aws-lc/CMakeFiles/ALL_BUILD.dir
+C:/Users/sorry/Desktop/Discord Engineering/design2_discord_kyle_branch/Slack_lizard/target/debug/build/aws-lc-sys-0d55405ed48d92fd/out/build/aws-lc/crypto/CMakeFiles/crypto_objects.dir
+C:/Users/sorry/Desktop/Discord Engineering/design2_discord_kyle_branch/Slack_lizard/target/debug/build/aws-lc-sys-0d55405ed48d92fd/out/build/aws-lc/crypto/CMakeFiles/crypto.dir
+C:/Users/sorry/Desktop/Discord Engineering/design2_discord_kyle_branch/Slack_lizard/target/debug/build/aws-lc-sys-0d55405ed48d92fd/out/build/aws-lc/crypto/CMakeFiles/INSTALL.dir
+C:/Users/sorry/Desktop/Discord Engineering/design2_discord_kyle_branch/Slack_lizard/target/debug/build/aws-lc-sys-0d55405ed48d92fd/out/build/aws-lc/crypto/fipsmodule/CMakeFiles/fipsmodule.dir
+C:/Users/sorry/Desktop/Discord Engineering/design2_discord_kyle_branch/Slack_lizard/target/debug/build/aws-lc-sys-0d55405ed48d92fd/out/build/aws-lc/crypto/fipsmodule/CMakeFiles/INSTALL.dir
+C:/Users/sorry/Desktop/Discord Engineering/design2_discord_kyle_branch/Slack_lizard/target/debug/build/aws-lc-sys-0d55405ed48d92fd/out/build/aws-lc/util/fipstools/CMakeFiles/INSTALL.dir

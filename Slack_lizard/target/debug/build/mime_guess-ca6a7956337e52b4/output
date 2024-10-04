@@ -1,0 +1,1 @@
+cargo:rustc-env=MIME_TYPES_GENERATED_PATH=C:\Users\sorry\Desktop\Discord Engineering\design2_discord_kyle_branch\Slack_lizard\target\debug\build\mime_guess-ca6a7956337e52b4\out\mime_types_generated.rs

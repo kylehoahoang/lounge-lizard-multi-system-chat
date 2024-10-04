@@ -1,0 +1,24 @@
+# CMake generation dependency list for this directory.
+C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeASMCompiler.cmake.in
+C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeASMInformation.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeASM_NASMInformation.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeCompilerIdDetection.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeDetermineASMCompiler.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeDetermineASM_NASMCompiler.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeDetermineCompiler.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeFindBinUtils.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeParseArguments.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeTestASMCompiler.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeTestASM_NASMCompiler.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/CheckCSourceCompiles.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/CheckIncludeFile.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/CheckLibraryExists.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/FindPackageMessage.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/FindThreads.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/Internal/CheckSourceCompiles.cmake
+C:/Users/sorry/.cargo/registry/src/index.crates.io-6f17d22bba15001f/aws-lc-sys-0.21.1/aws-lc/crypto/CMakeLists.txt
+C:/Users/sorry/.cargo/registry/src/index.crates.io-6f17d22bba15001f/aws-lc-sys-0.21.1/aws-lc/crypto/cmake/crypto-config.cmake
+C:/Users/sorry/Desktop/Discord Engineering/design2_discord_kyle_branch/Slack_lizard/target/debug/build/aws-lc-sys-0d55405ed48d92fd/out/build/CMakeFiles/3.30.4/CMakeASM_NASMCompiler.cmake
+C:\Program Files\CMake\share\cmake-3.30\Templates\MSBuild\nasm.props.in

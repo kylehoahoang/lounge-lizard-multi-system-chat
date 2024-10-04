@@ -1,0 +1,17 @@
+CMake Deprecation Warning at CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.5 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value or use a ...<max> suffix to tell
+  CMake that the project does not need compatibility with older versions.
+
+
+CMake Deprecation Warning at aws-lc/CMakeLists.txt:1 (cmake_minimum_required):
+  Compatibility with CMake < 3.5 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value or use a ...<max> suffix to tell
+  CMake that the project does not need compatibility with older versions.
+
+
+Copying platform assembly files from C:/Users/sorry/.cargo/registry/src/index.crates.io-6f17d22bba15001f/aws-lc-sys-0.21.1/aws-lc/generated-src/win-x86_64/crypto/ to C:/Users/sorry/Desktop/Discord Engineering/design2_discord_kyle_branch/Slack_lizard/target/debug/build/aws-lc-sys-0d55405ed48d92fd/out/build/aws-lc/crypto

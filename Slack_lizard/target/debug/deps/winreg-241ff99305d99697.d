@@ -1,0 +1,11 @@
+C:\Users\sorry\Desktop\Discord Engineering\design2_discord_kyle_branch\Slack_lizard\target\debug\deps\libwinreg-241ff99305d99697.rmeta: C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\winreg-0.50.0\src\lib.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\winreg-0.50.0\src\common.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\winreg-0.50.0\src\enums.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\winreg-0.50.0\src\reg_key.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\winreg-0.50.0\src\reg_key_metadata.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\winreg-0.50.0\src\reg_value.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\winreg-0.50.0\src\types.rs
+
+C:\Users\sorry\Desktop\Discord Engineering\design2_discord_kyle_branch\Slack_lizard\target\debug\deps\winreg-241ff99305d99697.d: C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\winreg-0.50.0\src\lib.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\winreg-0.50.0\src\common.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\winreg-0.50.0\src\enums.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\winreg-0.50.0\src\reg_key.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\winreg-0.50.0\src\reg_key_metadata.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\winreg-0.50.0\src\reg_value.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\winreg-0.50.0\src\types.rs
+
+C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\winreg-0.50.0\src\lib.rs:
+C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\winreg-0.50.0\src\common.rs:
+C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\winreg-0.50.0\src\enums.rs:
+C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\winreg-0.50.0\src\reg_key.rs:
+C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\winreg-0.50.0\src\reg_key_metadata.rs:
+C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\winreg-0.50.0\src\reg_value.rs:
+C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\winreg-0.50.0\src\types.rs:
