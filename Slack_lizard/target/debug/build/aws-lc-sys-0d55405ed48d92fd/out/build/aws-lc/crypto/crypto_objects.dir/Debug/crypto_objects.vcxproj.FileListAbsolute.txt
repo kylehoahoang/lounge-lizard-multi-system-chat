@@ -1,0 +1,1 @@
+C:\Users\sorry\Desktop\Discord Engineering\design2_discord_kyle_branch\Slack_lizard\target\debug\build\aws-lc-sys-0d55405ed48d92fd\out\build\aws-lc\crypto\crypto_objects.dir\Debug\crypto_objects.lib

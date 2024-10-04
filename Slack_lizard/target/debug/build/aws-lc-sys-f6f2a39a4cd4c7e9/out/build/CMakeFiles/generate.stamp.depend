@@ -1,0 +1,22 @@
+# CMake generation dependency list for this directory.
+C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeCInformation.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeCommonLanguageInclude.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeGenericSystem.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeInitializeConfigs.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeLanguageInformation.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeRCInformation.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeSystemSpecificInformation.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeSystemSpecificInitialize.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/Compiler/CMakeCommonCompilerMacros.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/Compiler/MSVC-C.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/Compiler/MSVC.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/Platform/Windows-Initialize.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/Platform/Windows-MSVC-C.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/Platform/Windows-MSVC.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/Platform/Windows.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/Platform/WindowsPaths.cmake
+C:/Users/sorry/.cargo/registry/src/index.crates.io-6f17d22bba15001f/aws-lc-sys-0.21.1/CMakeLists.txt
+C:/Users/sorry/Desktop/Discord Engineering/design2_discord_kyle_branch/Slack_lizard/target/debug/build/aws-lc-sys-f6f2a39a4cd4c7e9/out/build/CMakeFiles/3.30.4/CMakeCCompiler.cmake
+C:/Users/sorry/Desktop/Discord Engineering/design2_discord_kyle_branch/Slack_lizard/target/debug/build/aws-lc-sys-f6f2a39a4cd4c7e9/out/build/CMakeFiles/3.30.4/CMakeRCCompiler.cmake
+C:/Users/sorry/Desktop/Discord Engineering/design2_discord_kyle_branch/Slack_lizard/target/debug/build/aws-lc-sys-f6f2a39a4cd4c7e9/out/build/CMakeFiles/3.30.4/CMakeSystem.cmake
+C:\Program Files\CMake\share\cmake-3.30\Templates\MSBuild\nasm.props.in

@@ -1,0 +1,10 @@
+C:\Users\sorry\Desktop\Discord Engineering\design2_discord_kyle_branch\Slack_lizard\target\debug\deps\libenv_filter-ba85dbc2301d8087.rmeta: C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\env_filter-0.1.2\src/lib.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\env_filter-0.1.2\src\directive.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\env_filter-0.1.2\src\filter.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\env_filter-0.1.2\src\filtered_log.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\env_filter-0.1.2\src\op.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\env_filter-0.1.2\src\parser.rs
+
+C:\Users\sorry\Desktop\Discord Engineering\design2_discord_kyle_branch\Slack_lizard\target\debug\deps\env_filter-ba85dbc2301d8087.d: C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\env_filter-0.1.2\src/lib.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\env_filter-0.1.2\src\directive.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\env_filter-0.1.2\src\filter.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\env_filter-0.1.2\src\filtered_log.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\env_filter-0.1.2\src\op.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\env_filter-0.1.2\src\parser.rs
+
+C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\env_filter-0.1.2\src/lib.rs:
+C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\env_filter-0.1.2\src\directive.rs:
+C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\env_filter-0.1.2\src\filter.rs:
+C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\env_filter-0.1.2\src\filtered_log.rs:
+C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\env_filter-0.1.2\src\op.rs:
+C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\env_filter-0.1.2\src\parser.rs:

@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\sorry\Desktop\Discord Engineering\design2_discord_kyle_branch\Slack_lizard\target\debug\build\aws-lc-sys-f6f2a39a4cd4c7e9\out\build\CMakeFiles\f6eff3b320cf0780d55393de7440cda5\INSTALL_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{9E60E1E0-9E31-323D-ACFD-9AB1C7BAE59A}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

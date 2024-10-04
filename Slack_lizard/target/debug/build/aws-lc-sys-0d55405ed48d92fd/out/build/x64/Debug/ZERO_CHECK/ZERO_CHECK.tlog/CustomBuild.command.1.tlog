@@ -1,0 +1,10 @@
+^C:\USERS\SORRY\DESKTOP\DISCORD ENGINEERING\DESIGN2_DISCORD_KYLE_BRANCH\SLACK_LIZARD\TARGET\DEBUG\BUILD\AWS-LC-SYS-0D55405ED48D92FD\OUT\BUILD\CMAKEFILES\2CFFFF78C6F16A48F7217951AD8923A2\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/sorry/.cargo/registry/src/index.crates.io-6f17d22bba15001f/aws-lc-sys-0.21.1 "-BC:/Users/sorry/Desktop/Discord Engineering/design2_discord_kyle_branch/Slack_lizard/target/debug/build/aws-lc-sys-0d55405ed48d92fd/out/build" --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file "C:/Users/sorry/Desktop/Discord Engineering/design2_discord_kyle_branch/Slack_lizard/target/debug/build/aws-lc-sys-0d55405ed48d92fd/out/build/AWS_LC_RUST.sln"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
