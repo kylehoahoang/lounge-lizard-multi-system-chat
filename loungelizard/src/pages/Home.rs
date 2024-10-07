@@ -195,41 +195,40 @@ pub fn Home() -> Element {
             // Main content area
             div {
                 class: "main-content",
-
-                div { class: "space-y-50" , // Creates vertical spacing between items
-                    
-                    if !logged_in() {
-                        h1 { 
-                            class: "welcome-message", 
-                            "Welcome to Lounge Lizard Chat"
-                        }
-                        
-                        HomeLogin {
-                            confirmation: logged_in.clone()
-                        }
-                    }
-                    else 
-                    {
-                        div{
-                            if current_platform().to_string() == "Discord" {
-                                Discord_p{show_discord_server_pane: show_discord_server_pane.clone(), discord_guilds: discord_guilds.clone()}
-                            }
-                            else if current_platform().to_string() == "MSTeams" {
-                                MSTeams_p{}
-                            }
-                            else if current_platform().to_string() == "Slack" {
-                                Slack_p{current_platform: current_platform.clone()}
-                            }
-                            else{
-                                h2 { 
-                                    class: "welcome-message", 
-                                    "Sign in to the platforms and start chatting!"
-                                }
-                            }
-                        }    
-                    }
-                    
+//
+            if !logged_in() {
+                h1 { 
+                    class: "welcome-message", 
+                    "Welcome to Loung Lizard Chat"
                 }
+                
+                HomeLogin {
+                    confirmation: logged_in.clone()
+                }
+            }
+            else 
+            {
+
+                if current_platform().to_string() == "Discord" {
+                    Discord_p{}
+                }
+                else if current_platform().to_string() == "MSTeams" {
+                    MSTeams_p{}
+                }
+                else if current_platform().to_string() == "Slack" {
+                    Slack_p{current_platform: current_platform.clone()}
+                }
+                else{
+                    h2 { 
+                        class: "welcome-message", 
+                        "Sign in to the platforms and start chatting!"
+                    }
+                }
+                
+            }
+    
+
+// Sliding login pane
                 // Sliding login pane
                 
                 div {

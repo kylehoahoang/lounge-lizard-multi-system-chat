@@ -31,9 +31,12 @@ use api::discord::discord_api;
 use api::mongo_format::mongo_structs::*;
 use api::mongo_format::mongo_funcs::*; 
 
+mod comp;
+
 use lazy_static::lazy_static;
 use std::sync::{Arc};
 use tokio::sync::Mutex;
+
 
 use mongodb::{sync::Client, bson::doc};
 

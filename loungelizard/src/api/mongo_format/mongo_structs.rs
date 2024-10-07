@@ -39,6 +39,7 @@ pub struct Team {
 pub struct Slack_User {
     pub token: String,
     pub scope: String,
+    pub id: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -108,6 +109,7 @@ impl Default for Slack_User {
         Slack_User {
             token: String::new(),
             scope: String::new(),
+            id: String::new(),
         }
     }
 }

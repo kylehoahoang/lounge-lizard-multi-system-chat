@@ -106,7 +106,7 @@ pub async fn request_consumer(
                     user.slack.team.name    = oauth_response.team.name.unwrap().to_string();
                     user.slack.user.token   = oauth_response.authed_user.access_token.unwrap().to_string();
                     user.slack.user.scope   = oauth_response.authed_user.scope.unwrap().to_string();
-                    //user.slack.user.      = oauth_response.authed_user.id.to_string();
+                    user.slack.user.id      = oauth_response.authed_user.id.to_string();
                     let client_clone = client_lock.lock().await;
 
                     if let Some(client) = client_clone.as_ref() {

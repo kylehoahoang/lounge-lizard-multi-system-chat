@@ -33,6 +33,7 @@ pub fn SlackLogin (
     // ! ========================= ! //
 
     let mut logged_in = use_signal(||false);
+    let mut installed = use_signal(||false);
     let mut login_error = use_signal(|| None::<String>);
 
     // ! Slack Temp Values ! //
