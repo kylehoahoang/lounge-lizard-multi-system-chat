@@ -210,7 +210,10 @@ pub fn Home() -> Element {
             {
 
                 if current_platform().to_string() == "Discord" {
-                    Discord_p{}
+                    Discord_p{
+                        show_discord_server_pane: show_discord_server_pane.clone(),
+                        discord_guilds: discord_guilds.clone()
+                    }
                 }
                 else if current_platform().to_string() == "MSTeams" {
                     MSTeams_p{}
