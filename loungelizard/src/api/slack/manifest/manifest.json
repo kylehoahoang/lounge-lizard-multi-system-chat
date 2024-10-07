@@ -1,0 +1,110 @@
+{
+    "display_information": {
+        "name": "LoungeLizard_Beta"
+    },
+    "features": {
+        "bot_user": {
+            "display_name": "LoungeLizard_Beta",
+            "always_online": false
+        }
+    },
+    "oauth_config": {
+        "redirect_urls": [
+            "https://slack"
+        ],
+        "scopes": {
+            "user": [
+                "channels:history",
+                "channels:read",
+                "channels:write",
+                "channels:write.invites",
+                "chat:write",
+                "dnd:read",
+                "dnd:write",
+                "emoji:read",
+                "files:read",
+                "groups:history",
+                "groups:read",
+                "im:history",
+                "im:read",
+                "im:write",
+                "links:read",
+                "mpim:history",
+                "mpim:read",
+                "pins:read",
+                "reactions:read",
+                "reactions:write",
+                "reminders:write",
+                "stars:read",
+                "team:read",
+                "usergroups:read",
+                "users:read"
+            ],
+            "bot": [
+                "users:write"
+            ]
+        }
+    },
+    "settings": {
+        "event_subscriptions": {
+            "request_url": "https://slack",
+            "user_events": [
+                "channel_archive",
+                "channel_created",
+                "channel_deleted",
+                "channel_history_changed",
+                "channel_id_changed",
+                "channel_left",
+                "channel_rename",
+                "channel_shared",
+                "channel_unarchive",
+                "channel_unshared",
+                "dnd_updated",
+                "dnd_updated_user",
+                "email_domain_changed",
+                "emoji_changed",
+                "file_change",
+                "file_created",
+                "file_deleted",
+                "file_public",
+                "file_shared",
+                "file_unshared",
+                "group_archive",
+                "group_close",
+                "group_deleted",
+                "group_history_changed",
+                "group_left",
+                "group_open",
+                "group_rename",
+                "group_unarchive",
+                "im_close",
+                "im_created",
+                "im_history_changed",
+                "im_open",
+                "member_joined_channel",
+                "member_left_channel",
+                "message.channels",
+                "message.groups",
+                "message.im",
+                "pin_added",
+                "pin_removed",
+                "reaction_added",
+                "reaction_removed",
+                "star_added",
+                "star_removed",
+                "subteam_created",
+                "subteam_updated",
+                "team_domain_change",
+                "team_join",
+                "team_rename",
+                "user_change",
+                "user_huddle_changed",
+                "user_profile_changed",
+                "user_status_changed"
+            ]
+        },
+        "org_deploy_enabled": false,
+        "socket_mode_enabled": false,
+        "token_rotation_enabled": false
+    }
+}
