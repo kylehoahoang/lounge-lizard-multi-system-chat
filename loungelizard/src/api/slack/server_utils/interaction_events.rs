@@ -1,6 +1,6 @@
 use slack_morphism::prelude::*;
 use std::sync::Arc;
-use dioxus_logger::tracing::{info, error, warn, Level};
+use dioxus_logger::tracing::info;
 
 
 pub async fn interaction_events_function(

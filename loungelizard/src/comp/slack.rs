@@ -1,13 +1,10 @@
 use dioxus:: prelude::*;
-
-// Api mongo structs
-use futures::executor::block_on;
-use dioxus_logger::tracing::{info, error, warn};
-use std::sync::{Arc};
-use tokio::sync::{Mutex, oneshot};
+//use dioxus_logger::tracing::{info, error, warn};
+use std::{process::id, sync::Arc};
+use tokio::sync::Mutex;
 use crate::api::mongo_format::mongo_structs::*;
 use slack_morphism::prelude::*;
-use chrono::{DateTime, Utc, NaiveDateTime};
+use chrono::{DateTime, Utc};
 // ! Message Component 
 // Define the MessageComponent
 
@@ -21,10 +18,11 @@ pub fn HistoryMessageComponent(
         match info.sender.user.clone()
         {
             Some(user) => {
-                match user
-                {
-                    id => ("#6CA6E1", "flex-end"), // Light blue
-                    _ => ("#800080", "flex-start") // Purple
+                if user.to_string() == id{
+                    ("#6CA6E1", "flex-end") // Light blue
+                }
+                else{
+                    ("#800080", "flex-start") // Purple
                 }
             },
             None => ("","")
@@ -76,10 +74,12 @@ pub fn EventMessageComponent(
         match info.sender.user.clone()
         {
             Some(user) => {
-                match user
-                {
-                    id => ("#6CA6E1", "flex-end"), // Light blue
-                    _ => ("#800080", "flex-start") // Purple
+
+                if user.to_string() == id{
+                    ("#6CA6E1", "flex-end") // Light blue
+                }
+                else{
+                    ("#800080", "flex-start") // Purple
                 }
             },
             None => ("","")
@@ -138,7 +138,7 @@ pub fn CH_DM_Component(
     selected_channel: Signal<Option<SlackChannelInfo>>,
 ) -> Element {
     // Determine the background color and alignment based on the "me" prop
-    let user_lock = use_context::<Signal<Arc<Mutex<User>>>>();
+    let _user_lock = use_context::<Signal<Arc<Mutex<User>>>>();
 
     let background = 
     match selected_channel().clone()

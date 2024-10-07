@@ -4,18 +4,16 @@ use bytes::Bytes;
 use http_body_util::combinators::BoxBody;
 use http_body_util::{BodyExt, Full};
 use hyper::body::Incoming;
-use hyper::{client, Method, Request, Response, StatusCode};
+use hyper::{Method, Request, Response, StatusCode};
 use serde_json::Value;
 use tokio::time::{self, Duration};
-use std::sync::{Arc};
+use std::sync::Arc;
 use tokio::sync::Mutex;
 use std::convert::Infallible;
-use std::env::{self, set_var};
 
 use url::form_urlencoded;
-use dioxus_logger::tracing::{debug, error, warn, info, Level};
+use dioxus_logger::tracing::{debug, error, warn, info};
 use slack_morphism::prelude::*;
-use crate::api::slack::server_utils::request_server::request_server;
 use crate::api::mongo_format::mongo_structs::*;
 
 use mongodb::{sync::Client, bson::doc};

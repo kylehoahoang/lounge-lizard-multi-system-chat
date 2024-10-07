@@ -1,17 +1,13 @@
 #![allow(non_snake_case)]
 
 use dioxus::prelude::*;
-use slack_morphism::prelude::*;
+
 use serde_json::Value;
-use std::sync::{Arc};
+use std::sync::Arc;
 use tokio::sync::Mutex;
 use futures::executor::block_on;
-use std::{fs, result};
-use url::Url;
-use crate::api::slack::ngrok_s::*;
 use crate::api::slack::server_utils::setup_server::*;
-use dioxus_logger::tracing::{info, error, warn};
-use crate::{AppRoute};
+use dioxus_logger::tracing::error;
 
 
 // * Login Page Routing Files
@@ -40,19 +36,17 @@ pub fn Home() -> Element {
     // Discord Values 
     let mut show_discord_login_pane = use_signal(|| false);
     let mut show_discord_server_pane = use_signal(|| false);
-    let mut discord_token = use_signal(|| "".to_string());
-    let mut discord_guilds = use_signal(|| Value::Null);
+    let discord_token = use_signal(|| "".to_string());
+    let discord_guilds = use_signal(|| Value::Null);
 
 
     // Slack Values
     let mut show_slack_login_pane = use_signal(|| false);
-    let mut slack_token = use_signal(|| "".to_string());
 
     // MSTeams Values
     let mut show_teams_login_pane = use_signal(|| false);
-    let mut teams_token = use_signal(|| "".to_string());
 
-    let mut logged_in = use_signal(|| false);
+    let logged_in = use_signal(|| false);
 
     let mut current_platform = use_signal(|| "None".to_string());
 

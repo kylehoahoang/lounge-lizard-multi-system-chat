@@ -2,24 +2,13 @@
 
 use dioxus::prelude::*;
 use dioxus_logger::tracing::{info, error, warn, Level};
-
-
 use futures::executor::block_on;
-use serde_json::Value;
-use tokio::time;
-use tokio::runtime::Runtime;
-use futures_util::StreamExt;
-use chrono::{DateTime, Utc, NaiveDateTime};
 
 // * Front End Files
 mod front_ends;
-use front_ends::Slack::*;
 
 // * Regular Page Routing Files 
 mod pages;
-use pages::Discord::*;
-use pages::MSTeam::*;
-use pages::Slack::*;
 use pages::Home::*;
 
 // * Login Page Routing Files
@@ -27,14 +16,12 @@ mod logins;
 
 // * Api server files
 mod api;
-use api::discord::discord_api;
 use api::mongo_format::mongo_structs::*;
 use api::mongo_format::mongo_funcs::*; 
 
 mod comp;
-
 use lazy_static::lazy_static;
-use std::sync::{Arc};
+use std::sync::Arc;
 use tokio::sync::Mutex;
 
 
@@ -79,7 +66,7 @@ fn main() {
     }
 
     let cfg = dioxus::desktop::Config::new()
-        .with_custom_head(r#"<link rel="stylesheet" href="tailwind.css">"#.to_string());
+        .with_custom_head(r#"<link rel="stylesheet" href="/assets/tailwind.css">"#.to_string());
 
     LaunchBuilder::desktop()
         .with_cfg(cfg)

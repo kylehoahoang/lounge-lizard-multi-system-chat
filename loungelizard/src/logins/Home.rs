@@ -1,17 +1,13 @@
 use dioxus::prelude::*;
 use dioxus_logger::tracing::warn;
-use serde::de::value::EnumAccessDeserializer;
-use crate::{AppRoute};
 use futures::executor::block_on;
-
-use clipboard_rs::{Clipboard, ClipboardContext, ContentFormat};
 use crate::api::mongo_format::mongo_structs::*;
 use crate::api::mongo_format::mongo_funcs::*;
 
-use mongodb::{sync::Client, error::Result as MongoResult, bson::doc};
-use dioxus_logger::tracing::{info, error, Level};
+use mongodb::{sync::Client, bson::doc};
+use dioxus_logger::tracing::{info, error};
 
-use std::sync::{Arc};
+use std::sync::Arc;
 use tokio::sync::Mutex;
 use regex::Regex;
 

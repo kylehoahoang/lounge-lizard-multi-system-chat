@@ -1,7 +1,7 @@
 
 use serde_json::Value;
 
-use dioxus_logger::tracing::{info, error, warn, Level};
+use dioxus_logger::tracing::{info, warn};
 use slack_morphism::prelude::*;
 
 // Import the necessary error handling types  

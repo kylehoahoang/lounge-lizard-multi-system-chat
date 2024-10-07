@@ -1,5 +1,5 @@
 use dioxus::prelude::*;
-use crate::{AppRoute, MONGO_COLLECTION, MONGO_DATABASE};
+use crate::{MONGO_COLLECTION, MONGO_DATABASE};
 use bson::to_bson;
 
 use crate::api::discord::discord_api;
@@ -10,7 +10,7 @@ use mongodb::{sync::Client, bson::doc};
 
 use dioxus_logger::tracing::{info, error, warn};
 
-use std::sync::{Arc};
+use std::sync::Arc;
 use tokio::sync::Mutex;
 
 #[component]
@@ -42,7 +42,7 @@ pub fn DiscordLogin(
 
         block_on(async move {
             match discord_api::login_request(username.to_string(), password.to_string()).await {
-                Ok((user_id, auth_discord_token)) => {
+                Ok((_user_id, auth_discord_token)) => {
                     discord_token.set(auth_discord_token); // Call the success handler
                     show_discord_login_pane.set(false);
                     show_discord_server_pane.set(true);
@@ -57,7 +57,7 @@ pub fn DiscordLogin(
 
         block_on(async move {
             match discord_api::get_guilds(discord_token.to_string()).await {
-                Ok((discord_guilds_response)) => {
+                Ok(discord_guilds_response) => {
                     discord_guilds.set(discord_guilds_response); // Call the success handler
                     info!("discord_guilds get successful");
                 }

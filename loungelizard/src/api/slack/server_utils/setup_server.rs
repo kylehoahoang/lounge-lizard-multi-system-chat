@@ -1,20 +1,16 @@
 
 use slack_morphism::prelude::*;
-use tracing::Value;
 use std::fs;
 use url::Url;
 use crate::api::slack::ngrok_s::*;
-use dioxus_logger::tracing::{info, error, warn};
+use dioxus_logger::tracing::{info, error};
 use crate::api::mongo_format::mongo_structs::*;
-use std::process::{Command, Child, Stdio};
-use reqwest::Error;
-use std::sync::{Arc};
+use std::sync::Arc;
 use tokio::sync::Mutex;
 
 
-pub async fn start_endpoint(
-    user: User,
-) -> Result<SlackAppManifest, Box<dyn std::error::Error>> {
+pub async fn start_endpoint() -> Result<SlackAppManifest, Box<dyn std::error::Error>>
+{
     // Define the path to the JSON file
     let file_path = "src/api/slack/manifest/manifest.json";
 
@@ -35,7 +31,7 @@ pub async fn start_endpoint(
 
             // Attempt to start the ngrok session
             match ngrok_start_session("8080") {
-                Ok(child) => {
+                Ok(_child) => {
                     info!("ngrok session started successfully.");
 
                     // Wait for a brief period to allow ngrok to start
@@ -84,7 +80,13 @@ pub async fn start_endpoint(
         if let Some(ref mut event_subscriptions) = settings.event_subscriptions {
             if let Some(ref mut request_url) = event_subscriptions.request_url {
                 // Update the request URL to the public URL
-                *request_url = Url::parse(redirect_url.as_str()).expect("Failed to parse URL");
+                if !redirect_url.is_empty() {
+                    *request_url = Url::parse(redirect_url.as_str()).expect("Failed to parse URL");
+                }
+                else {
+                    error!("Failed to parse URL into manifest");
+                }
+                
             }
         }
     }
@@ -92,7 +94,12 @@ pub async fn start_endpoint(
     if let Some(ref mut oauth_config) = manifest_struct.oauth_config {
         if let Some(ref mut redir_urls) = oauth_config. redirect_urls{
             // Update the redirect URLs to contain only the public URL
-            *redir_urls = vec![(Url::parse(redirect_url.as_str()).expect("Failed to parse URL"))];
+            if !redirect_url.is_empty() {
+                *redir_urls = vec![(Url::parse(redirect_url.as_str()).expect("Failed to parse URL"))];
+            }
+            else {
+                error!("Failed to parse URL into manifest");
+            }
         }
     }
 
@@ -104,8 +111,6 @@ pub async fn update_slack_app(
     user: User,
 ) -> Result<(), Box<dyn std::error::Error>> 
 {
-    let user_c = user.clone();
-
     // Create a new Slack client 
     let client  = SlackClient::new(SlackClientHyperConnector::new().expect("failed to create hyper connector"));
 
@@ -117,7 +122,7 @@ pub async fn update_slack_app(
     let session = client.open_session(&token);
 
     // Start server to generate a app manifest structure 
-    let manifest_struct = match start_endpoint(user_c).await
+    let manifest_struct = match start_endpoint().await
     {
         Ok(manifest) => manifest,
         Err(err) => return Err(err),
@@ -144,7 +149,6 @@ pub async fn create_slack_app(
 ) -> Result<(), Box<dyn std::error::Error>> 
 {
     let mut user = user_lock.lock().await; 
-    let user_c = user.clone();
     
     let config_token = match config_token.starts_with("xoxe.xoxp") {
         true => {
@@ -176,7 +180,7 @@ pub async fn create_slack_app(
     let session = client.open_session(&token);
 
     // Start server to generate a app manifest structure 
-    let manifest_struct = match start_endpoint(user_c).await
+    let manifest_struct = match start_endpoint().await
     {
         Ok(manifest) => manifest,
         Err(err) => return Err(err),

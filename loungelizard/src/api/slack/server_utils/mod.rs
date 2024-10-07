@@ -5,4 +5,3 @@ pub mod command_events;
 pub mod error_handler;
 pub mod request_server;
 pub mod setup_server;
-pub mod coroutine_enums;

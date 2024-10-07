@@ -4,30 +4,15 @@ use dioxus:: prelude::*;
 use futures::executor::block_on;
 use dioxus_logger::tracing::{info, error, warn};
 use mongodb::{sync::Client, bson::doc};
-use tokio::runtime::TryCurrentError;
 use crate::api::mongo_format::mongo_structs::*;
 use crate::api::slack::event_server::*;
-use crate::api::slack::{self, server_utils::*};
-
-use crate::comp::slack::*;
-
+use crate::api::slack::server_utils::*;
 use crate::front_ends::Slack::*;
 use slack_morphism::prelude::*;
-use futures_util::StreamExt;
-
 use serde_json::Value;
-
-use std::result;
-use std::sync::{Arc};
+use std::sync::Arc;
 use tokio::sync::{Mutex, oneshot};
-use slack_morphism::prelude::*;
-
-use tokio::time::{sleep, Duration};
-
-#[derive(Debug)]
-struct UserStateExample(u64);
 struct EmptyStruct {}
-
 
 
 #[component]
@@ -73,7 +58,7 @@ pub fn Slack(current_platform: Signal<String>,) -> Element {
     // ! Fill all necessary components for the page vectors 
     // Messages vector
 
-    let consumer = use_coroutine::<EmptyStruct,_,_>(|_rx| {
+    let _consumer = use_coroutine::<EmptyStruct,_,_>(|_rx| {
         async move {
             info!("Consumer loop started");
             loop{
@@ -234,7 +219,6 @@ pub fn Slack(current_platform: Signal<String>,) -> Element {
                                 }
                             }
                         },
-                        _ => {}
                     };
 
                     current_channel.set(
@@ -279,7 +263,6 @@ pub fn Slack(current_platform: Signal<String>,) -> Element {
                     if let Some(chan) = current_channel() {
                         let token = lock_temp.lock().await.slack.user.token.clone();
                         for history_message in get_history_list(token, chan).await {
-                            println!("History List: {:#?}", history_message);
                             history_list.write().push(history_message);
                             
                         }

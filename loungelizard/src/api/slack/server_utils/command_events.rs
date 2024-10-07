@@ -2,7 +2,7 @@
 
 use std::sync::Arc;
 use slack_morphism::prelude::*;
-use dioxus_logger::tracing::{info, error, warn, Level};
+use dioxus_logger::tracing::info;
 use crate::api::slack::config_env::config_env_var;
 
 pub async fn command_events_function(

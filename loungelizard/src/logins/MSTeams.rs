@@ -1,14 +1,13 @@
 use dioxus::prelude::*;
 use bson::to_bson;
-use dioxus_elements::ms;
-use crate::{AppRoute, MONGO_COLLECTION, MONGO_DATABASE};
+use crate::{MONGO_COLLECTION, MONGO_DATABASE};
 
 use crate::api::mongo_format::mongo_structs::*;
 use dioxus_logger::tracing::{info, error, warn};
 use futures::executor::block_on;
 use mongodb::{sync::Client, bson::doc};
 
-use std::sync::{Arc};
+use std::sync::Arc;
 use tokio::sync::Mutex;
 
 
@@ -27,9 +26,7 @@ pub fn MSTeamsLogin (
     let mut password = use_signal(|| "".to_string());
 
     let mut logged_in = use_signal(|| false);
-    let mut login_error = use_signal(|| None::<String>);
-
-    let mut login_error = use_signal(|| None::<String>);
+    let login_error = use_signal(|| None::<String>);
 
     let handle_login = move |_| {
         let username = username.clone();

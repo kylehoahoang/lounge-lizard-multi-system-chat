@@ -1,9 +1,6 @@
 use dioxus::prelude::*;
 use bson::to_bson;
-use crate::api::slack;
 use crate::api::slack::server_utils::setup_server::create_slack_app;
-use crate::{AppRoute};
-
 use clipboard_rs::{Clipboard, ClipboardContext};
 use crate::api::mongo_format::mongo_structs::*;
 use crate::api::mongo_format::mongo_funcs::*;   
@@ -11,14 +8,8 @@ use dioxus_logger::tracing::{info, error, warn};
 use futures::executor::block_on;
 use mongodb::{sync::Client, bson::doc};
 
-use std::sync::{Arc};
+use std::sync::Arc;
 use tokio::sync::Mutex;
-
-use std::fs;
-use url::Url; 
-
-use slack_morphism::prelude::*;
-use crate::api::slack::ngrok_s::*;
 
 #[component]
 
@@ -33,7 +24,6 @@ pub fn SlackLogin (
     // ! ========================= ! //
 
     let mut logged_in = use_signal(||false);
-    let mut installed = use_signal(||false);
     let mut login_error = use_signal(|| None::<String>);
 
     // ! Slack Temp Values ! //

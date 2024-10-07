@@ -2,12 +2,12 @@ use dioxus::prelude::*;
 use serde_json::Value;
 use tracing::info;
 use futures::executor::block_on;
-use chrono::{DateTime, Utc, NaiveDateTime};
+use chrono::{DateTime, Utc};
 use crate::api::discord::discord_api::*;
 
 // Api mongo structs
 use crate::api::mongo_format::mongo_structs::*;
-use std::sync::{Arc};
+use std::sync::Arc;
 use tokio::sync::Mutex;
 #[component]
 pub fn Discord(show_discord_server_pane: Signal<bool>, discord_guilds: Signal<Value>) -> Element {
@@ -91,7 +91,7 @@ fn ChannelList(user: Signal<Arc<Mutex<User>>>, channels: Signal<Option<Value>>, 
     let mut fetch_error = use_signal(|| None::<String>);
     let mut show_channel_messages_pane = use_signal(|| false);
     let mut current_channel_id = use_signal(|| " ".to_string());
-    let user_lock_api = Arc::clone(&user());
+   
 
     // Fetch the channels for the selected guild
     let handle_get_channel_messages = move |channel_id: String, user_lock_api: Arc<Mutex<User>>| {
@@ -176,7 +176,7 @@ fn ChannelMessages(user: Signal<Arc<Mutex<User>>>, messages: Signal<Option<Value
             let user_lock_api = user_lock_api.lock().await;
             let discord_token = user_lock_api.discord.token.clone();
             match send_message(discord_token.to_string(), current_channel_id.to_string(), message_input.to_string()).await {
-                Ok((send_response)) => {
+                Ok(_send_response) => {
                     info!("Message sent successfully");
                 }
                 Err(e) => {
@@ -185,7 +185,7 @@ fn ChannelMessages(user: Signal<Arc<Mutex<User>>>, messages: Signal<Option<Value
                 }
             }
             match get_messages(discord_token.to_string(), current_channel_id.to_string()).await {
-                Ok((send_response)) => {
+                Ok(send_response) => {
                     messages.set(Some(send_response));
                     info!("Messages update successful");
                 }
@@ -198,7 +198,7 @@ fn ChannelMessages(user: Signal<Arc<Mutex<User>>>, messages: Signal<Option<Value
     };
 
     // Coroutine for fetching messages periodically
-    let _fetch_messages = use_coroutine::<EmptyStruct,_,_>(|rx| {
+    let _fetch_messages = use_coroutine::<EmptyStruct,_,_>(|_rx| {
         async move {
             loop {
                 // Wait for 5 seconds before fetching new messages

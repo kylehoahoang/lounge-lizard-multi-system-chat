@@ -1,6 +1,6 @@
 
 use std::sync::Arc;
-use dioxus_logger::tracing::{info, error, warn, Level};
+use dioxus_logger::tracing::info;
 use slack_morphism::prelude::*;
 
 #[derive(Debug)]

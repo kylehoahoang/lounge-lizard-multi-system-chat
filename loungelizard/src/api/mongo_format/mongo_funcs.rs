@@ -1,7 +1,6 @@
 // Synchronous function to initialize the MongoDB client
-use mongodb::{sync::Client, error::Result as MongoResult, bson::doc};
-use crate ::api::mongo_format::mongo_structs::*;
-use dioxus_logger::tracing::{info, error, Level};
+use mongodb::{sync::Client, error::Result as MongoResult};
+use dioxus_logger::tracing::{info, error};
 
 
 const MONGO_CLUSTER: &'static str = "mongodb+srv://admin:admin@cluster0.tkwyp.mongodb.net/?retryWrites=true&w=majority";

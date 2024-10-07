@@ -1,21 +1,11 @@
 
-use chrono::format;
 use dioxus:: prelude::*;
-
 // Api mongo structs
 use futures::executor::block_on;
-use dioxus_logger::tracing::{info, error, warn};
-use chrono::{DateTime, Utc, NaiveDateTime};
-use futures::sink::Send;
-use futures::AsyncBufRead;
-use tokio::runtime::TryCurrentError;
-use tokio::signal;
-use std::sync::{Arc};
-use tokio::sync::{Mutex, oneshot};
+use chrono::{DateTime, Utc};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 use crate::api::mongo_format::mongo_structs::*;
-use futures_util::StreamExt;
-
-use crate::api::slack::server_utils::setup_server::update_slack_app;
 use crate::comp::slack::*;
 use slack_morphism::prelude::*;
 
@@ -73,60 +63,49 @@ pub fn Slack_fe(
             }
         }; 
 
-    let id_fn = ||
-        {
-            match current_channel() {
-                Some(channel) => {
-                    channel.id.to_string()
-                },
-                None => {
-                    "".to_string()
-                }
-                
-            }
-        };
-
-    let user_chat_lock = Arc::clone(&user_lock());
     let handle_send_message = move |_| {
+        if send_message() != "".to_string()
+        {
+            block_on(
+                async move {
+                    let user_lock_c = user_lock().clone();
+                    let user = user_lock_c.lock().await;
+                    // Create a new Slack client 
+                    let client  = 
+                    SlackClient::new(SlackClientHyperConnector::new().expect("failed to create hyper connector"));
     
-        block_on(
-            async move {
-                let user_lock_c = user_lock().clone();
-                let user = user_lock_c.lock().await;
-                // Create a new Slack client 
-                let client  = 
-                SlackClient::new(SlackClientHyperConnector::new().expect("failed to create hyper connector"));
-
-                // Create a new token from the environment variable `SLACK_CONFIG_TOKEN`
-                let token: SlackApiToken = SlackApiToken::new(user.slack.user.token.clone().into());
-
-                // Create a new session with the client and the token
-                let session = client.open_session(&token);
-
-                match current_channel() {
-                    Some(channel) => {
-
-                        let message_content = 
-                            SlackMessageContent::new()
-                                .with_text(send_message().to_string());
-
-                        let post_chat_response = 
-                            SlackApiChatPostMessageRequest::new(
-                               channel.id.clone(),
-                               message_content
-                            );
-                        let post_message_response=
-                            session.chat_post_message(&post_chat_response)
-                            .await
-                            .unwrap();
-
-                        send_message.set("".to_string());
-                    },
-                    None => {}
+                    // Create a new token from the environment variable `SLACK_CONFIG_TOKEN`
+                    let token: SlackApiToken = SlackApiToken::new(user.slack.user.token.clone().into());
+    
+                    // Create a new session with the client and the token
+                    let session = client.open_session(&token);
+    
+                    match current_channel() {
+                        Some(channel) => {
+    
+                            let message_content = 
+                                SlackMessageContent::new()
+                                    .with_text(send_message().to_string());
+    
+                            let post_chat_response = 
+                                SlackApiChatPostMessageRequest::new(
+                                   channel.id.clone(),
+                                   message_content
+                                );
+                            let _post_message_response=
+                                session.chat_post_message(&post_chat_response)
+                                .await
+                                .unwrap();
+    
+                            send_message.set("".to_string());
+                        },
+                        None => {}
+                    }
+                            
                 }
-                        
-            }
-        );
+            );
+        }
+        
     };
     
      rsx!(
