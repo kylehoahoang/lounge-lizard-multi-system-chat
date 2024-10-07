@@ -1,9 +1,0 @@
-C:\Users\sorry\Desktop\Discord Engineering\design2_discord_kyle_branch\Slack_lizard\target\debug\deps\libhyper_rustls-501baa0ee4652eb6.rmeta: C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\hyper-rustls-0.27.3\src/lib.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\hyper-rustls-0.27.3\src\config.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\hyper-rustls-0.27.3\src\connector.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\hyper-rustls-0.27.3\src\connector\builder.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\hyper-rustls-0.27.3\src\stream.rs
-
-C:\Users\sorry\Desktop\Discord Engineering\design2_discord_kyle_branch\Slack_lizard\target\debug\deps\hyper_rustls-501baa0ee4652eb6.d: C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\hyper-rustls-0.27.3\src/lib.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\hyper-rustls-0.27.3\src\config.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\hyper-rustls-0.27.3\src\connector.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\hyper-rustls-0.27.3\src\connector\builder.rs C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\hyper-rustls-0.27.3\src\stream.rs
-
-C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\hyper-rustls-0.27.3\src/lib.rs:
-C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\hyper-rustls-0.27.3\src\config.rs:
-C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\hyper-rustls-0.27.3\src\connector.rs:
-C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\hyper-rustls-0.27.3\src\connector\builder.rs:
-C:\Users\sorry\.cargo\registry\src\index.crates.io-6f17d22bba15001f\hyper-rustls-0.27.3\src\stream.rs:
