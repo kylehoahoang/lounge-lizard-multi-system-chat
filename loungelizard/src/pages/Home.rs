@@ -46,7 +46,7 @@ pub fn Home() -> Element {
     // MSTeams Values
     let mut show_teams_login_pane = use_signal(|| false);
 
-    let logged_in = use_signal(|| false);
+    let mut logged_in = use_signal(|| false);
 
     let mut current_platform = use_signal(|| "None".to_string());
 
@@ -67,6 +67,7 @@ pub fn Home() -> Element {
         else {
             show_discord_server_pane.set(!show_discord_server_pane());
             current_platform.set("Discord".to_string());
+            logged_in.set(true);
         }
     };
 
