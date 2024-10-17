@@ -2,12 +2,6 @@
     "display_information": {
         "name": "LoungeLizard_Beta"
     },
-    "features": {
-        "bot_user": {
-            "display_name": "LoungeLizard_Beta",
-            "always_online": false
-        }
-    },
     "oauth_config": {
         "redirect_urls": [
             "https://slack"
@@ -39,9 +33,6 @@
                 "team:read",
                 "usergroups:read",
                 "users:read"
-            ],
-            "bot": [
-                "users:write"
             ]
         }
     },

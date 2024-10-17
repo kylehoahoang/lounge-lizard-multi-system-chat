@@ -18,7 +18,9 @@ use crate::api::mongo_format::mongo_structs::*;
 
 use mongodb::{sync::Client, bson::doc};
 use crate::api::mongo_format::mongo_funcs::*; 
-
+use reqwest::header::{CONTENT_TYPE, CONTENT_LENGTH, HOST};
+use reqwest::{Client as ReqwestClient};
+use std::collections::HashMap;
 
 // Import the necessary error handling types
 // Define the global queue as a Mutex wrapped around a vector of QueueItem
@@ -26,7 +28,6 @@ lazy_static::lazy_static! {
     static ref GLOBAL_QUEUE: Arc<Mutex<Vec<Value>>> = Arc::new(Mutex::new(Vec::new()));
     static ref TEMP_CODE: Arc<Mutex<Option<String>>> = Arc::new(Mutex::new(None));
 }
-
 
 /// Consume incoming requests from the global queue.
 ///
@@ -79,82 +80,60 @@ pub async fn request_consumer(
             info!("Code received: {}", code);
 
             let mut user = user_lock.lock().await;
+
+            {
+
+            let client_r = ReqwestClient::new();
+
             
-            let client  = SlackClient::new(SlackClientHyperConnector::new().expect("Failed to create client"));
+            let mut form_data = HashMap::new();
+            form_data.insert("client_id", user.slack.client_id.as_str());
+            form_data.insert("client_secret", user.slack.client_secret.as_str());
+            form_data.insert("code", code.as_str());
+            form_data.insert("grant_type", "authorization_code");
 
-            // We need to handle the installation request
-            let temp_code = SlackOAuthCode::new(code.to_string());
-
-            let oauth_token_request = SlackOAuthV2AccessTokenRequest::new(
-                user.slack.client_id.clone().into(),
-                user.slack.client_secret.clone().into(),
-                temp_code,
-            );
-
-            // use the client variable here
-            let oauth_response: Result<SlackOAuthV2AccessTokenResponse, errors::SlackClientError> = 
-                client.oauth2_access(&oauth_token_request).await;
-
-            match oauth_response {
-                Ok(oauth_response) => {
-                    user.slack.app_id       = oauth_response.app_id.to_string();
-                    user.slack.bot.token    = oauth_response.access_token.to_string();
-                    user.slack.bot.scope    = oauth_response.scope.to_string();
-                    user.slack.team.id      = oauth_response.team.id.to_string();
-                    user.slack.team.name    = oauth_response.team.name.unwrap().to_string();
-                    user.slack.user.token   = oauth_response.authed_user.access_token.unwrap().to_string();
-                    user.slack.user.scope   = oauth_response.authed_user.scope.unwrap().to_string();
-                    user.slack.user.id      = oauth_response.authed_user.id.to_string();
-                    let client_clone = client_lock.lock().await;
-
-                    if let Some(client) = client_clone.as_ref() {
-                        let user_clone = user.clone();
-
-                        let db = client.database(MONGO_DATABASE);
-                        let user_collection = db.collection::<User>(MONGO_COLLECTION);
-
-                        match to_bson(&user_clone.slack) {
-                            Ok(slack_bson) => {
-                                match user_collection
-                                    .find_one_and_update(
-                                        doc! { 
-                                            "$or": [{"username": &user_clone.username}, 
-                                                    {"email": &user_clone.email}] 
-                                        },
-                                        doc! {
-                                            "$set": { "slack": slack_bson }
-                                        }
-                                    )
-                                    .await 
-                                {
-                                    Ok(Some(_)) => {
-                                        // Document found and updated
-                                        info!("Document updated successfully");
-                                    }
-                                    Ok(None) => {
-                                        // No document matched the filter
-                                        warn!("Document not found");
-                                    }
-                                    Err(e) => {
-                                        error!("Something went wrong: {:#?}", e);
-                                        return Err(Box::new(e)); // Convert to Box
-                                    }
-                                }
-                            }
-                            Err(e) => {
-                                error!("Failed to convert Slack to BSON: {:#?}", e);
-                                return Err(Box::new(e)); // Convert to Box
-                            }
+            let response = 
+                match client_r
+                        .post("https://slack.com/api/oauth.v2.access")
+                        .header(HOST, "slack.com")
+                        .header(CONTENT_TYPE, "application/x-www-form-urlencoded")
+                        .form(&form_data)
+                        .send()
+                        .await
+                {
+                    Ok(response) => response,
+                    Err(err) => {
+                        warn!("Error Encountered {}", err);
+                        return Err(Box::new(err) as Box<dyn std::error::Error + Send + Sync>);
+                    }
+                };
+            
+                if response.status().is_success() {
+                    // Try to print the raw response before parsing
+                    let raw_body = response.text().await?;
+            
+                    // Attempt to parse the response body as JSON
+                    match serde_json::from_str::<ModSlackOAuthV2Response>(&raw_body) {
+                        Ok(oauth_response) => {
+                            user.slack.app_id       = oauth_response.app_id.to_string();
+                            user.slack.team.id      = oauth_response.team.id.to_string();
+                            user.slack.team.name    = oauth_response.team.name.unwrap().to_string();
+                            user.slack.user.token   = oauth_response.authed_user.access_token.unwrap().to_string();
+                            user.slack.user.scope   = oauth_response.authed_user.scope.unwrap().to_string();
+                            user.slack.user.id      = oauth_response.authed_user.id.to_string();
                         }
-                        
-                    }    
-                    
-            
-                }
-                Err(e) => {
-                    error!("Error: {:#?}", e);
+                        Err(e) => {
+                            error!("Failed to parse JSON: {}", e);
+                        }
+                    }
+                } else {
+                    println!("Failed to get a successful response. Status: {}", response.status());
                 }
             }
+
+            update_slack(user.clone(), client_lock.clone()).await;
+
+            
 
             *temp_code_lock = None;
         }

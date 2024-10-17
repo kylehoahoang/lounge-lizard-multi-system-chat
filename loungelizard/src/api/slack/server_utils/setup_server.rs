@@ -132,7 +132,6 @@ pub async fn update_slack_app(
                 .post("https://slack.com/api/tooling.tokens.rotate")
                 .header(HOST, "slack.com")
                 .header(CONTENT_TYPE, "application/x-www-form-urlencoded")
-                //.header(CONTENT_LENGTH, 168)
                 .form(&form_data)
                 .send()
                 .await

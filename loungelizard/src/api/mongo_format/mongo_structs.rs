@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use slack_morphism::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct User {
@@ -13,7 +14,6 @@ pub struct User {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Slack {
     pub app_id: String,
-    pub bot: Bot,
     pub client_id: String,
     pub client_secret: String,
     pub config_token: String,
@@ -22,12 +22,6 @@ pub struct Slack {
     pub team: Team,
     pub user: Slack_User,
     pub verif_token: String,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct Bot {
-    pub token: String,
-    pub scope: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -99,7 +93,6 @@ impl Default for Slack {
     fn default() -> Self {
         Slack {
             app_id: String::new(),
-            bot: Bot::default(),
             client_id: String::new(),
             client_secret: String::new(),
             config_token: String::new(),
@@ -108,16 +101,6 @@ impl Default for Slack {
             team: Team::default(),
             user: Slack_User::default(),
             verif_token: String::new(),
-        }
-    }
-}
-
-// Implement Default for Bot
-impl Default for Bot {
-    fn default() -> Self {
-        Bot {
-            token: String::new(),
-            scope: String::new(),
         }
     }
 }
@@ -159,4 +142,17 @@ impl Default for MSTeams {
             token: String::new(),
         }
     }
+}
+
+// ! OAuth Process modified 
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct ModSlackOAuthV2Response {
+    pub access_token: Option<SlackApiTokenValue>,
+    pub token_type: Option<SlackApiTokenType>,
+    pub scope: Option<SlackApiTokenScope>,
+    pub bot_user_id: Option<SlackUserId>,
+    pub app_id: SlackAppId,
+    pub team: SlackTeamInfo,
+    pub authed_user: SlackOAuthV2AuthedUser,
+    pub incoming_webhook: Option<SlackOAuthIncomingWebHook>,
 }
