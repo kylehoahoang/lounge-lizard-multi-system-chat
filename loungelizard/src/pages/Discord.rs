@@ -14,7 +14,25 @@ pub fn Discord(show_discord_server_pane: Signal<bool>, discord_guilds: Signal<Va
    // ! User Mutex Lock to access the user data
    let user_lock = use_context::<Signal<Arc<Mutex<User>>>>();
    
+   let user_guilds = Arc::clone(&user_lock());
+   
    // ! ========================= ! //
+
+   block_on(async move {
+    let discord_token = user_guilds.lock().await.discord.token.clone();
+
+    match get_guilds(discord_token).await {
+        Ok(discord_guilds_response) => {
+            discord_guilds.set(discord_guilds_response); // Call the success handler
+            info!("discord_guilds get successful");
+        }
+        Err(e) => {
+            //login_error.set(Some(e.to_string()));
+            info!("discord_guilds get failed: {}", e);
+            }
+        }
+    });
+   
    
     rsx! { 
         // Bottom pane for servers
