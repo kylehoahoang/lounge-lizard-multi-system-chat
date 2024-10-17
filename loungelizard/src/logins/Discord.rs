@@ -55,18 +55,18 @@ pub fn DiscordLogin(
             }
         });
 
-        block_on(async move {
-            match discord_api::get_guilds(discord_token.to_string()).await {
-                Ok(discord_guilds_response) => {
-                    discord_guilds.set(discord_guilds_response); // Call the success handler
-                    info!("discord_guilds get successful");
-                }
-                Err(e) => {
-                    login_error.set(Some(e.to_string()));
-                    info!("discord_guilds get failed: {}", e);
-                }
-            }
-        });
+        // block_on(async move {
+        //     match discord_api::get_guilds(discord_token.to_string()).await {
+        //         Ok(discord_guilds_response) => {
+        //             discord_guilds.set(discord_guilds_response); // Call the success handler
+        //             info!("discord_guilds get successful");
+        //         }
+        //         Err(e) => {
+        //             login_error.set(Some(e.to_string()));
+        //             info!("discord_guilds get failed: {}", e);
+        //         }
+        //     }
+        // });
 
         if !login_error().is_none() {return;}
 
