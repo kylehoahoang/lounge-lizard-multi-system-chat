@@ -35,6 +35,23 @@ pub fn Slack(current_platform: Signal<String>,) -> Element {
     let mut history_list    : Signal<Vec<SlackHistoryMessage>> = use_signal(|| Vec::<SlackHistoryMessage>::new());
     let mut current_channel : Signal<Option<SlackChannelInfo>> = use_signal(||None);
 
+    let user_lock_install = Arc::clone(&user_lock());
+    let user_lock_first_try = Arc::clone(&user_lock());
+
+    let mut installed = use_signal(|| false);
+
+    let go_to = use_signal(|| 
+        
+        block_on(
+            async {
+                let  user = user_lock_first_try.lock().await;
+                if user.slack.app_id != "" {
+                    true
+                } else {
+                    false
+                }
+        
+    }));
 
      // Create a oneshot channel to signal the task to stop
     let (stop_tx, stop_rx) = oneshot::channel();
@@ -58,24 +75,33 @@ pub fn Slack(current_platform: Signal<String>,) -> Element {
     // ! Fill all necessary components for the page vectors 
     // Messages vector
 
+    // This is the main consumer loop for the Slack front end. It requests events every 5 seconds and
+    // handles the events by pushing them to the correct vector based on the event type.
+    //
+    // # Important
+    // You should not call this function directly. Instead, use the `use_coroutine` macro to
+    // spawn this function in a separate task.
     let _consumer = use_coroutine::<EmptyStruct,_,_>(|_rx| {
         async move {
+            // The main consumer loop. This will request events every 5 seconds and handle the
+            // events by pushing them to the correct vector based on the event type.
             info!("Consumer loop started");
-            loop{
+            loop {
                 // Gracefully exit the loop if the platform is not Slack
                 if !current_platform().eq("Slack") {
                     // Send the stop signal when needed
                     stop_tx.send(()).unwrap();
+                    info!("Consumer loop stopped");
                     break;
                 }
                     
-                let json_response = 
+                let json_response =
                     main_events::request_consumer(user_lock_new.clone(), client_lock_new.clone()).await;
 
                 // Step 4: Error handeling
                 match json_response {
                     Ok(response) => {
-                        if response != Value::Null{
+                        if response != Value::Null {
 
                             // ! Essentially all events will be callbacks
                             match response.get("event") {
@@ -90,6 +116,7 @@ pub fn Slack(current_platform: Signal<String>,) -> Element {
                                                 // ! Main work area for defining what to do with each event
                                                 Some("message") => {
                                                     // Handle message events
+                                                    info!("Handling message event");
                                                     match serde_json::from_value::<SlackMessageEvent>(event.clone())
                                                     {
                                                         Ok(message_event) => {
@@ -105,7 +132,7 @@ pub fn Slack(current_platform: Signal<String>,) -> Element {
                                                                 }
                                                             }
                                                         }
-                                                        Err(e) => { 
+                                                        Err(e) => {
                                                             error!("Error with Message Event: {:?}", e);
                                                         }
 
@@ -144,25 +171,7 @@ pub fn Slack(current_platform: Signal<String>,) -> Element {
             info!("Consumer loop ended");
         }
     });
-
-    let user_lock_install = Arc::clone(&user_lock());
-    let user_lock_first_try = Arc::clone(&user_lock());
-
-    let mut installed = use_signal(|| false);
-
-    let go_to = use_signal(|| 
-        
-        block_on(
-            async {
-                let  user = user_lock_first_try.lock().await;
-                if user.slack.app_id != "" {
-                    true
-                } else {
-                    false
-                }
-        
-    }));
-
+   
     let handle_enter_click = move |_| {
 
         block_on(
@@ -263,7 +272,8 @@ pub fn Slack(current_platform: Signal<String>,) -> Element {
                     if let Some(chan) = current_channel() {
                         let token = lock_temp.lock().await.slack.user.token.clone();
                         for history_message in get_history_list(token, chan).await {
-                            history_list.write().push(history_message);
+                            history_list.write().push(history_message.clone());
+                            //println!("Pushed history message: {:#?}", history_message);
                             
                         }
                         
@@ -317,12 +327,10 @@ pub fn Slack(current_platform: Signal<String>,) -> Element {
                     "Click Once Installed",
                 }
             }
-            
-            
-
         }
         
     }
 
 }
 
+// ! ========================= ! //

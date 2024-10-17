@@ -172,7 +172,13 @@ pub fn Slack_fe(
                                     None => String::new(), // Return an empty string if there is no user
                                 },
                                 div {
-                                    style: format!("padding: 8px; border-radius: 8px; background-color: {}; color: white; max-width: 60%;", if true {"#6CA6E1"} else {"#EAD01C"}),
+                                    style: match &message_h.sender.user {
+                                        Some(user) => format!(
+                                            "padding: 8px; border-radius: 8px; background-color: {}; color: white; max-width: 60%;",
+                                            if user.to_string() == user_id {"#6CA6E1"} else {"#8A2BE2"}
+                                        ),
+                                        None => String::new(), // Return an empty string if there is no user
+                                    },
                                     match &message_h.content.text {
                                         Some(text) => format!("{}", text), // Display the message content if available
                                         None => "No content available".to_string(), // Fallback text if there is no content
@@ -180,9 +186,13 @@ pub fn Slack_fe(
                                 }
                                 div {
                                     style: "font-size: 0.8em; color: gray; margin-top: 4px;", // Styling for user and timestamp
-                                    match &message_h.sender.username {
-                                        Some(username) => format!("{username}-{}", format_timestamp(message_h.origin.ts.to_string()) ), // Display the username if it exists
-                                        None => format!("Me - {}", format_timestamp(message_h.origin.ts.to_string())), // Fallback text if the username is None
+                                    match &message_h.sender.user {
+                                        // TODO Change to usernames 
+                                        Some(username) => format!("{}-{}",
+                                            if username.to_string() == user_id {"Me".to_string()} else {username.to_string()},
+                                            format_timestamp(message_h.origin.ts.to_string()) ), // Display the username if it exists
+
+                                        None => format!("Unknown - {}", format_timestamp(message_h.origin.ts.to_string())), // Fallback text if the username is None
                                     } 
                                 } 
                             }
