@@ -309,6 +309,17 @@ fn ChannelMessages(user: Signal<Arc<Mutex<User>>>, messages: Signal<Option<Value
                             class: "messages-item",
                             div {
                                 class: "message-header",
+                                img {
+                                    class: "message-avatar",
+                                    src: { 
+                                        if let Some(avatar) = message["author"]["avatar"].as_str() {
+                                            format!("https://cdn.discordapp.com/avatars/{}/{}.webp", message["author"]["id"].as_str().unwrap(), avatar)
+                                        } else {
+                                            "defaultpfp.png".to_string() // Path to your default avatar image
+                                        }
+                                    },
+                                    alt: "User Avatar"
+                                }
                                 span {
                                     class: "message-username",
                                     {message["author"]["username"].as_str().unwrap_or("Unknown User")}
