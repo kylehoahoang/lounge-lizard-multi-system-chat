@@ -73,7 +73,7 @@ fn DiscordBottomPane(show_discord_server_pane: Signal<bool>, discord_guilds: Sig
             class: {
                 format_args!("discord-bottom-pane {}", if show_discord_server_pane() { "show" } else { "" })
             },
-            h2 { class: "discord-centered-heading", "Discord" }
+            h2 { class: "discord-heading", "Discord" }
             if !discord_guilds().is_null() {
                 // Render the discord_guilds data
                 ul {
@@ -137,15 +137,15 @@ fn ChannelList(user: Signal<Arc<Mutex<User>>>, channels: Signal<Option<Value>>, 
             class: {
                 format_args!("channel-list-pane {}", if show_channel_pane() && show_discord_server_pane() { "show" } else { "" })
             },
-            h2 { class: "discord-centered-heading", "Channels" }
+            h2 { class: "discord-heading", "Channels" }
             button {
                 style: "position: absolute; top: 10px; right: 10px; background-color: transparent; border: none; cursor: pointer;",
                 onclick: move |_| { show_channel_pane.set(false);},
                 svg {
                     xmlns: "http://www.w3.org/2000/svg",
                     view_box: "0 0 24 24",
-                    width: "30", // Adjust size as needed
-                    height: "30", // Adjust size as needed
+                    width: "24", // Adjust size as needed
+                    height: "24", // Adjust size as needed
                     path {
                         d: "M18 6 L6 18 M6 6 L18 18", // This path describes a close icon (X)
                         fill: "none",
@@ -282,7 +282,7 @@ fn ChannelMessages(user: Signal<Arc<Mutex<User>>>, messages: Signal<Option<Value
                 format_args!("channel-messages-list-pane {}", if show_channel_messages_pane() && show_discord_server_pane() { "show" } else { "" })
             },
             h2 {
-                class: "discord-centered-heading",
+                class: "discord-heading",
                 "Messages"
             }
             button {
@@ -291,8 +291,8 @@ fn ChannelMessages(user: Signal<Arc<Mutex<User>>>, messages: Signal<Option<Value
                 svg {
                     xmlns: "http://www.w3.org/2000/svg",
                     view_box: "0 0 24 24",
-                    width: "30", // Adjust size as needed
-                    height: "30", // Adjust size as needed
+                    width: "24", // Adjust size as needed
+                    height: "24", // Adjust size as needed
                     path {
                         d: "M18 6 L6 18 M6 6 L18 18", // This path describes a close icon (X)
                         fill: "none",
@@ -400,56 +400,97 @@ fn ChannelMessages(user: Signal<Arc<Mutex<User>>>, messages: Signal<Option<Value
                     }
                     div {
                         class: "attachment-container",
-                        input {
-                            // tell the input to pick a file
-                            r#type: "file",
-                            // list the accepted extensions
-                            accept: "",
-                            // pick multiple files
-                            multiple: false,
-                            style: "width:70px;color:transparent",
-                            onchange: move |evt| {
-                                async move {
-                                    if let Some(file_engine) = evt.files() {
-                                        let files = file_engine.files();
-                                        for file_name in &files {
-                                            if let Some(file) = file_engine.read_file(file_name).await
-                                            {
-                                                let mut attachment = attachment_input.write();
-                                                attachment.extend(file);
-                                                attachment_name.set(file_name.to_string());
+                        // Paperclip icon button
+                        label {   
+                            r#for: "file-input",
+                            class: "attachment-button",
+                            svg {
+                                view_box: "0 0 24 24",
+                                width: "30px",
+                                height: "30px",
+                                fill: "none",
+                                xmlns: "http://www.w3.org/2000/svg",
+                                g {
+                                    id: "SVGRepo_bgCarrier",
+                                    stroke_width: "0",
+                                }
+                                g {
+                                    id: "SVGRepo_tracerCarrier",
+                                    stroke_linecap: "round",
+                                    stroke_linejoin: "round",
+                                }
+                                g {
+                                    id: "SVGRepo_iconCarrier",
+                                    path {
+                                        d: "M19.8278 11.2437L12.7074 18.3641C10.7548 20.3167 7.58896 20.3167 5.63634 18.3641C3.68372 16.4114 3.68372 13.2456 5.63634 11.293L12.4717 4.45763C13.7735 3.15589 15.884 3.15589 17.1858 4.45763C18.4875 5.75938 18.4875 7.86993 17.1858 9.17168L10.3614 15.9961C9.71048 16.647 8.6552 16.647 8.00433 15.9961C7.35345 15.3452 7.35345 14.2899 8.00433 13.6391L14.2258 7.41762",
+                                        stroke: "#f5f5f5",
+                                        stroke_width: "0.8399999999999999",
+                                        stroke_linecap: "round",
+                                        stroke_linejoin: "round",
+                                    }
+                                }
+                            }
+                        
+                            input {
+                                id: "file-input",
+                                r#type: "file",
+                                accept: "",
+                                multiple: false,
+                                style: "display: none;",
+                                onchange: move |evt| {
+                                    async move {
+                                        if let Some(file_engine) = evt.files() {
+                                            let files = file_engine.files();
+                                            for file_name in &files {
+                                                if let Some(file) = file_engine.read_file(file_name).await {
+                                                    let mut attachment = attachment_input.write();
+                                                    attachment.extend(file);
+                                                    attachment_name.set(file_name.to_string());
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
                         }
-                        div {
-                            class: "file-name-display",
-                            // Use the attachment_name signal to display the selected file name
-                            if attachment_name().is_empty() {
-                                "No file chosen"
-                            } else {
-                                "Selected file: {attachment_name}"
-                            }
-                        }
+                        // div {
+                        //     class: "file-name-display",
+                        //     // Use the attachment_name signal to display the selected file name
+                        //     if attachment_name().is_empty() {
+                        //         "No file chosen"
+                        //     } else {
+                        //         "Selected file: {attachment_name}"
+                        //     }
+                        // }
                     }
                     button {  
                         class: "send-button", 
                         onclick: move |_| handle_send_message(Arc::clone(&user())),
-                        // Include the SVG and the button text
                         div {
-                            // Insert the SVG directly
                             svg {
+                                view_box: "0 0 24 24",
+                                width: "30px",
+                                height: "30px",
+                                fill: "none",
                                 xmlns: "http://www.w3.org/2000/svg",
-                                width: "16",
-                                height: "16",
-                                fill: "currentColor",
-                                class: "bi bi-send",
-                                view_box: "0 0 16 16",
-                                path {
-                                    d: "M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"
+                                g {
+                                    id: "SVGRepo_bgCarrier",
+                                    stroke_width: "0",
                                 }
+                                g {
+                                    id: "SVGRepo_tracerCarrier",
+                                    stroke_linecap: "round",
+                                    stroke_linejoin: "round",
+                                }
+                                g {
+                                    id: "SVGRepo_iconCarrier",
+                                    path {
+                                        fill_rule: "evenodd",
+                                        clip_rule: "evenodd",
+                                        d: "M3.3938 2.20468C3.70395 1.96828 4.12324 1.93374 4.4679 2.1162L21.4679 11.1162C21.7953 11.2895 22 11.6296 22 12C22 12.3704 21.7953 12.7105 21.4679 12.8838L4.4679 21.8838C4.12324 22.0662 3.70395 22.0317 3.3938 21.7953C3.08365 21.5589 2.93922 21.1637 3.02382 20.7831L4.97561 12L3.02382 3.21692C2.93922 2.83623 3.08365 2.44109 3.3938 2.20468ZM6.80218 13L5.44596 19.103L16.9739 13H6.80218ZM16.9739 11H6.80218L5.44596 4.89699L16.9739 11Z",
+                                        fill: "#f5f5f5",
+                                    }
+                                }           
                             }
                         }
                     }
