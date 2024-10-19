@@ -306,6 +306,16 @@ body {
   /* Slide in */
 }
 
+.discord-centered-heading {
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-size: 18px;
+  color: #f5f5f5;
+  font-weight: bold;
+  margin-top: 15px;
+  margin-bottom: 10px;
+}
+
 .guild-list {
   list-style-type: none;
   /* This removes the bullet points */
@@ -335,7 +345,7 @@ body {
   /* Start off-screen at the bottom */
   left: 100px;
   width: calc(100% - 110px);
-  height: calc(100% - 50px);
+  height: calc(100% - 60px);
   /* Adjust height as necessary */
   overflow-y: auto;
   background-color: #282c34;
@@ -387,9 +397,9 @@ body {
   /* Start off-screen at the bottom */
   left: 100px;
   width: calc(100% - 110px);
-  height: calc(100% - 100px);
+  height: calc(100% - 110px);
   /* Adjust height as necessary */
-  background-color: #4c5463;
+  background-color: #4c546395;
   /* Dark background for pane */
   color: white;
   transition: bottom 0.5s ease-in-out, opacity 0.4s ease-in-out;
@@ -398,6 +408,8 @@ body {
   z-index: 1001;
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
+  backdrop-filter: blur(15x); /* Apply the blur effect */
+  -webkit-backdrop-filter: blur(10px); /* Support for Safari */
 }
 
 /* When the pane is shown, slide it up */
@@ -416,7 +428,7 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   padding: 10px;
-  max-height: calc(100% - 80px);
+  max-height: calc(100% - 120px);
 }
 
 .message-username {
@@ -431,6 +443,36 @@ body {
   font-size: 0.875rem;
   /* smaller font size */
   margin-left: 10px;
+}
+
+.message-content {
+  margin-top: 10px; /* Adds a 20px top margin */
+  font-size: 0.875rem;
+}
+
+.messages-item {
+  background-color: #7585bd00;
+  color: white;
+  border: none;
+  padding: 15px;
+  cursor: pointer;
+  margin: 5px 0;
+  max-width: 95%;
+  /* Set the maximum width to 80% of the parent container */
+  width: fit-content;
+  /* Allow the width to adjust based on content */
+  height: auto;
+  text-align: left;
+  border-radius: 10px;
+  word-wrap: break-word;
+  /* Prevent long words from overflowing */
+  white-space: normal;
+  /* Allow content to wrap onto the next line */
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.messages-button:hover {
+  background-color: #5b6eae;
 }
 
 .messages-button {
@@ -484,21 +526,26 @@ body {
   /* Take up remaining space */
   padding: 8px;
   border: 1px solid #ccc;
-  border-radius: 10px;
-  font-size: 16px;
+  border-radius: 20px;
+  font-size: 0.875rem;
   color: #141414;
+  background-color: #ffffffd3;
 }
 
 .send-button {
   margin-left: 10px;
-  padding: 8px 16px;
-  background-color: #4caf50;
-  /* Green background */
+  padding: 10px; /* Equal padding for a circular shape */
+  background-color: #61aa64c6; /* Green background */
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 50%; /* Make it circular */
   cursor: pointer;
-  font-size: 16px;
+  font-size: 16px; /* Adjust font size as necessary */
+  width: 48px; /* Set a specific width */
+  height: 48px; /* Set a specific height to maintain the circular shape */
+  display: flex; /* Use flexbox to center the SVG and text */
+  align-items: center; /* Center vertically */
+  justify-content: center; /* Center horizontally */
 }
 
 .send-button:hover {

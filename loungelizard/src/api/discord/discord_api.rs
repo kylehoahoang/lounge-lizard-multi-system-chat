@@ -1,4 +1,4 @@
-use reqwest::Client;
+use reqwest::{multipart, Client};
 use reqwest::header::{AUTHORIZATION, HeaderValue};
 use serde_json::Value;
 use std::error::Error;
@@ -95,6 +95,36 @@ pub async fn send_message(token: String, channel_id: String, message: String) ->
         .post(&url)
         .header(AUTHORIZATION, HeaderValue::from_str(&token)?)
         .json(&body)
+        .send()
+        .await?;
+
+    if response.status().is_success() {
+        let response_json = response.json().await?;
+        Ok(response_json)
+    } else {
+        Err(format!("Send message request failed with status: {}", response.status()).into())
+    }
+}
+
+// FUNCTION: Sends message to a server channel
+pub async fn send_message_attachment(token: String, channel_id: String, message: String, attachment: Vec<u8>, attachment_name: String) -> Result<Value, Box<dyn Error>> {
+    let client = Client::new();
+    let url = format!("https://discord.com/api/v9/channels/{}/messages", channel_id);
+    let body = serde_json::json!({ "content": message });
+
+    // Create a multipart form with the file content and the message content
+    let form = multipart::Form::new()
+        .text("content", message) // Add the message content as a text part
+        .part(
+            "files[0]", // The name of the part that Discord expects for file attachments
+            multipart::Part::bytes(attachment)
+                .file_name(attachment_name), // Add the file as a multipart part with a file name
+        );
+
+    let response = client
+        .post(&url)
+        .header(AUTHORIZATION, HeaderValue::from_str(&token)?)
+        .multipart(form)
         .send()
         .await?;
 
