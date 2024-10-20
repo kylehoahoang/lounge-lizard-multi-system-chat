@@ -324,7 +324,7 @@ body {
 }
 
 .guild-button {
-  background-color: #7289da;
+  background-color: #30303067;
   color: white;
   border: none;
   padding: 10px;
@@ -334,10 +334,11 @@ body {
   text-align: left;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease;
 }
 
 .guild-button:hover {
-  background-color: #5b6eae;
+  background-color: #303030;
 }
 
 .channel-list-pane {
@@ -358,7 +359,7 @@ body {
   z-index: 1000;
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0px 10px 5px rgba(0, 0, 0, 0.2);
 }
 
 /* When the pane is shown, slide it up */
@@ -386,6 +387,7 @@ body {
   width: 100%;
   text-align: left;
   border-radius: 10px;
+  transition: background-color 0.3s ease;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
@@ -410,9 +412,9 @@ body {
   z-index: 1001;
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
-  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(15x); /* Apply the blur effect */
   -webkit-backdrop-filter: blur(10px); /* Support for Safari */
+  box-shadow: 0 0px 10px 5px rgba(0, 0, 0, 0.1);
 }
 
 /* When the pane is shown, slide it up */
@@ -484,10 +486,84 @@ body {
   white-space: normal;
   /* Allow content to wrap onto the next line */
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease;
 }
 
 .messages-item:hover {
   background-color: #5b6eae;
+}
+
+.file-attachment-other-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 10px auto; /* Center the container */
+  width: 100%; /* 80% of the parent's width */
+  background-color: #7289da; /* Blue background */
+  font-size: 0.875rem;
+  border-radius: 15px; /* Rounded corners */
+  padding: 10px; /* Inner padding */
+  color: white; /* Text color, adjust as needed */
+  cursor: pointer;
+  transition: background-color 0.5s ease;
+  box-shadow: 0 0px 10px 5px rgba(0, 0, 0, 0.2);
+}
+
+.file-attachment-other-container:hover {
+  background-color: rgb(150, 161, 199);
+}
+
+.file-name-display {
+  position: fixed;
+  bottom: 70px;
+  width: fit-content;
+  height: 40px;
+  font-size: 0.875rem;
+  margin-bottom: 10px;
+  z-index: 101;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  /* Keep the same high z-index */
+  background-color: #1f20226e;
+  padding-left: 10px;
+  padding-right: 10px;
+  box-shadow: 0 0px 10px 5px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 15px;
+  /* Center the box horizontally */
+  left: 50%; /* Move to the middle of the viewport */
+  transform: translateX(-50%); /* Offset by half the width */
+  /* Add backdrop filter for blur effect */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  /* For Safari support */
+}
+
+.file-name-display.show {
+  opacity: 1;
+}
+
+.file-close-button {
+  position: absolute;
+  top: -10px; /* Adjust as necessary */
+  right: -10px; /* Adjust as necessary */
+  width: 24px; /* Set size */
+  height: 24px; /* Set size */
+  border: none;
+  border-radius: 50%; /* Makes it circular */
+  background-color: rgba(255, 255, 255, 0.8); /* Light background */
+  color: #333; /* Color for the close icon */
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Optional shadow */
+}
+
+.file-close-button:hover {
+  background-color: rgba(255, 255, 255, 1); /* Change color on hover */
 }
 
 .message-input-container {
@@ -560,5 +636,5 @@ body {
 }
 
 .send-button:hover {
-  background-color: #68a86ba5;
+  background-color: #648cc4;
 }
