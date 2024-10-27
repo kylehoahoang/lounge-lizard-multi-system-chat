@@ -490,6 +490,12 @@ body {
   box-shadow: 0 0px 5px 5px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.reaction:hover {
+  background-color: #5b6eae;
 }
 
 

@@ -136,6 +136,25 @@ pub async fn send_message_attachment(token: String, channel_id: String, message:
     }
 }
 
+// FUNCTION: Sends a reaction to a message in a server channel
+pub async fn send_reaction(token: String, channel_id: String, message_id: String, emoji: String) -> Result<(), Box<dyn Error>> {
+    let client = Client::new();
+    let url = format!("https://discord.com/api/v9/channels/{}/messages/1299874389856096297/reactions/{}/@me", channel_id, emoji);
+    println!("send_reaction received emoji: {}", emoji);
+
+    let response = client
+        .put(&url)
+        .header(AUTHORIZATION, HeaderValue::from_str(&token)?)
+        .send()
+        .await?;
+
+    if response.status().is_success() {
+        Ok(())
+    } else {
+        Err(format!("Send reaction request failed with status: {}", response.status()).into())
+    }
+}
+
 // FUNCTION: Get messages from a channel
 pub async fn get_messages(token: String, channel_id: String) -> Result<Value, Box<dyn Error>> {
     let client = Client::builder()

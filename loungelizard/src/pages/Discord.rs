@@ -187,6 +187,8 @@ struct EmptyStruct {} // Empty struct to use for coroutines (when you don't need
 fn ChannelMessages(user: Signal<Arc<Mutex<User>>>, messages: Signal<Option<Value>>, show_channel_messages_pane: Signal<bool>, current_channel_id: Signal<String>,  show_discord_server_pane: Signal<bool>) -> Element {
     let mut send_error = use_signal(|| None::<String>);
     let mut message_input = use_signal(|| "".to_string());
+    let mut message_id_input = use_signal(|| "".to_string());
+    let mut reaction_input = use_signal(|| "".to_string());
     let mut attachment_name = use_signal(|| "".to_string());
     let mut attachment_input = use_signal(|| Vec::new());
     let user_lock_api = Arc::clone(&user());
@@ -231,6 +233,46 @@ fn ChannelMessages(user: Signal<Arc<Mutex<User>>>, messages: Signal<Option<Value
                         send_error.set(Some(e.to_string()));
                         info!("Message send failed: {}", e);
                     }
+                }
+            }
+
+            
+    
+            // Fetch messages regardless of success or failure in sending the message
+            match get_messages(discord_token.to_string(), current_channel_id.to_string()).await {
+                Ok(send_response) => {
+                    messages.set(Some(send_response));
+                    info!("Messages update successful");
+                }
+                Err(e) => {
+                    send_error.set(Some(e.to_string()));
+                    info!("Messages update failed: {}", e);
+                }
+            }
+        });
+    };
+
+    let handle_send_reaction =  move |user_lock_api: Arc<Mutex<User>>| {
+        block_on(async move {
+            let binding = user_lock_api.clone();
+            let user_lock_api = binding.lock().await;
+            let discord_token = user_lock_api.discord.token.clone();
+            println!("reaction from handler is: {}", reaction_input.to_string());
+            
+
+            // Send a reaction
+            match send_reaction(
+                discord_token.to_string(),
+                current_channel_id.to_string(),
+                message_id_input.to_string(),
+                reaction_input.to_string()
+            ).await {
+                Ok(_send_response) => {
+                    info!("Reaction sent successfully");
+                }
+                Err(e) => {
+                    send_error.set(Some(e.to_string()));
+                    info!("Message send failed: {}", e);
                 }
             }
     
@@ -458,6 +500,12 @@ fn ChannelMessages(user: Signal<Arc<Mutex<User>>>, messages: Signal<Option<Value
                                     for reaction in reactions {
                                         span {
                                             class: "reaction",
+                                            onclick: { 
+                                                reaction_input.set(reaction["emoji"]["name"].to_string().clone());
+                                                message_id_input.set(message["id"].to_string()).clone();
+                                                println!("reaction input from div {}", reaction_input);
+                                                move |_| handle_send_reaction(Arc::clone(&user())) 
+                                            },
                                             {
                                                 reaction["emoji"]["name"].as_str().unwrap_or("")
                                             }
