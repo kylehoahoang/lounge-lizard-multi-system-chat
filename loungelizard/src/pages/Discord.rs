@@ -501,10 +501,14 @@ fn ChannelMessages(user: Signal<Arc<Mutex<User>>>, messages: Signal<Option<Value
                                         span {
                                             class: "reaction",
                                             onclick: { 
-                                                reaction_input.set(reaction["emoji"]["name"].to_string().clone());
-                                                message_id_input.set(message["id"].to_string()).clone();
+                                                let reaction_emoji = reaction["emoji"]["name"].to_string().clone();
+                                                let current_message_id = message["id"].to_string().clone();
                                                 println!("reaction input from div {}", reaction_input);
-                                                move |_| handle_send_reaction(Arc::clone(&user())) 
+                                                move |_|{
+                                                    reaction_input.set(reaction_emoji.clone());
+                                                    message_id_input.set(current_message_id.clone());
+                                                     handle_send_reaction(Arc::clone(&user())) 
+                                                }
                                             },
                                             {
                                                 reaction["emoji"]["name"].as_str().unwrap_or("")
