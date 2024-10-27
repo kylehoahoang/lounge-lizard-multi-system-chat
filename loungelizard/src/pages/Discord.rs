@@ -354,7 +354,7 @@ fn ChannelMessages(user: Signal<Arc<Mutex<User>>>, messages: Signal<Option<Value
                                                         video {
                                                             src: "{url}",
                                                             controls: true,    // Enable controls
-                                                            autoplay: true,    // Enable autoplay
+                                                            autoplay: false,    // Enable autoplay
                                                             muted: true,   
                                                             height: "30%", // Adjust width as needed
                                                             style: "display: block; margin: 10px auto;", // Center the video if needed
@@ -447,6 +447,22 @@ fn ChannelMessages(user: Signal<Arc<Mutex<User>>>, messages: Signal<Option<Value
                                                         }
                                                     }
                                                 }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            div {
+                                class: "reactions",
+                                if let Some(reactions) = message["reactions"].as_array() {
+                                    for reaction in reactions {
+                                        span {
+                                            class: "reaction",
+                                            {
+                                                reaction["emoji"]["name"].as_str().unwrap_or("")
+                                            }
+                                            {
+                                                {" ".to_string() + &reaction["count"].as_u64().unwrap_or(0).to_string()}
                                             }
                                         }
                                     }

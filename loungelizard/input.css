@@ -412,7 +412,7 @@ body {
   z-index: 1001;
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
-  backdrop-filter: blur(15x); /* Apply the blur effect */
+  backdrop-filter: blur(15px); /* Apply the blur effect */
   -webkit-backdrop-filter: blur(10px); /* Support for Safari */
   box-shadow: 0 0px 10px 5px rgba(0, 0, 0, 0.1);
 }
@@ -466,6 +466,32 @@ body {
   margin-top: 10px; /* Adds a 20px top margin */
   font-size: 0.875rem;
 }
+
+.reactions {
+  display: flex;                /* Use flexbox to align children horizontally */
+  align-items: center;         /* Center items vertically */
+  
+}
+
+.reaction {
+  display: inline-block;
+  width: fit-content;
+  height: 24px;
+  padding: 10px;
+  background-color: #1f20226e;
+  color: whitesmoke;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  margin-top: 10px;
+  margin-right: 5px;
+  font-size: 0.875rem;
+  box-shadow: 0 0px 5px 5px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
 
 .messages-item {
   background-color: #ffffff06;
