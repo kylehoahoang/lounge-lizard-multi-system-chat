@@ -139,8 +139,15 @@ pub async fn send_message_attachment(token: String, channel_id: String, message:
 // FUNCTION: Sends a reaction to a message in a server channel
 pub async fn send_reaction(token: String, channel_id: String, message_id: String, emoji: String) -> Result<(), Box<dyn Error>> {
     let client = Client::new();
-    let url = format!("https://discord.com/api/v9/channels/{}/messages/1299874389856096297/reactions/{}/@me", channel_id, emoji);
-    println!("send_reaction received emoji: {}", emoji);
+    let emoji_clean = strip_quotes(&emoji); // Remove quotes if present
+    let message_id_clean = strip_quotes(&message_id);
+
+    let url = format!(
+        "https://discord.com/api/v9/channels/{}/messages/{}/reactions/{}/@me",
+        channel_id, message_id_clean, emoji_clean
+    );
+    println!("send_reaction received emoji: {}", emoji_clean);
+    println!("url is: {}", url);
 
     let response = client
         .put(&url)
@@ -154,6 +161,7 @@ pub async fn send_reaction(token: String, channel_id: String, message_id: String
         Err(format!("Send reaction request failed with status: {}", response.status()).into())
     }
 }
+
 
 // FUNCTION: Get messages from a channel
 pub async fn get_messages(token: String, channel_id: String) -> Result<Value, Box<dyn Error>> {
@@ -177,4 +185,8 @@ pub async fn get_messages(token: String, channel_id: String) -> Result<Value, Bo
     } else {
         Err(format!("Get messages request failed with status: {}", response.status()).into())
     }
+}
+
+fn strip_quotes(s: &str) -> &str {
+    s.trim_matches('"')
 }
