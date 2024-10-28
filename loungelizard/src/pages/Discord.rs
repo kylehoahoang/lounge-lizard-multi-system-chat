@@ -210,9 +210,6 @@ fn ChannelMessages(user: Signal<Arc<Mutex<User>>>, messages: Signal<Option<Value
                 ).await {
                     Ok(_send_response) => {
                         info!("Message with attachment sent successfully");
-                        // Clear the attachment input and name after sending the message
-                        attachment_input.set(Vec::new()); // Assuming attachment_input is a Vec<u8> signal
-                        attachment_name.set(String::new()); // Assuming attachment_name is a String signal
                     }
                     Err(e) => {
                         send_error.set(Some(e.to_string()));
@@ -249,6 +246,10 @@ fn ChannelMessages(user: Signal<Arc<Mutex<User>>>, messages: Signal<Option<Value
                     info!("Messages update failed: {}", e);
                 }
             }
+
+            // Clear the attachment input and name after sending the message
+            attachment_input.set(Vec::new()); // Assuming attachment_input is a Vec<u8> signal
+            attachment_name.set(String::new()); // Assuming attachment_name is a String signal
         });
     };
 
@@ -287,6 +288,9 @@ fn ChannelMessages(user: Signal<Arc<Mutex<User>>>, messages: Signal<Option<Value
                     info!("Messages update failed: {}", e);
                 }
             }
+
+            reaction_input.set(String::new()); // Clear emoji and message id
+            message_id_input.set(String::new());
         });
     };
 
@@ -349,6 +353,12 @@ fn ChannelMessages(user: Signal<Arc<Mutex<User>>>, messages: Signal<Option<Value
                     for message in messages_data.as_array().unwrap_or(&vec![]) {
                         li {
                             class: "messages-item",
+                            onclick: {
+                                let current_message_id = message["id"].to_string().clone();
+                                move |_| {
+                                    message_id_input.set(current_message_id.clone());
+                                }
+                            },
                             div {
                                 class: "message-header",
                                 img {
@@ -357,7 +367,7 @@ fn ChannelMessages(user: Signal<Arc<Mutex<User>>>, messages: Signal<Option<Value
                                         if let Some(avatar) = message["author"]["avatar"].as_str() {
                                             format!("https://cdn.discordapp.com/avatars/{}/{}.webp", message["author"]["id"].as_str().unwrap(), avatar)
                                         } else {
-                                            "defaultpfp.png".to_string() // Path to your default avatar image
+                                            "assets/defaultpfp.png".to_string() // Path to your default avatar image
                                         }
                                     },
                                     alt: "User Avatar"
@@ -507,7 +517,7 @@ fn ChannelMessages(user: Signal<Arc<Mutex<User>>>, messages: Signal<Option<Value
                                                 move |_|{
                                                     reaction_input.set(reaction_emoji.clone());
                                                     message_id_input.set(current_message_id.clone());
-                                                     handle_send_reaction(Arc::clone(&user())) 
+                                                    handle_send_reaction(Arc::clone(&user())) 
                                                 }
                                             },
                                             {
@@ -657,6 +667,73 @@ fn ChannelMessages(user: Signal<Arc<Mutex<User>>>, messages: Signal<Option<Value
                                     }           
                                 }
                             }
+                        }
+                    }
+                    div {
+                        class: format_args!("reaction-picker {}", if !message_id_input().is_empty() { "show" } else { "" }),
+                        // Close button
+                        button {
+                            style: "position: absolute; top: 10px; right: 10px; background-color: transparent; border: none; cursor: pointer;",
+                            onclick: move |_| {
+                                message_id_input.set(String::new());
+                                reaction_input.set(String::new());
+                            },
+                            svg {
+                                xmlns: "http://www.w3.org/2000/svg",
+                                view_box: "0 0 24 24",
+                                width: "24", // Adjust size as needed
+                                height: "24", // Adjust size as needed
+                                path {
+                                    d: "M18 6 L6 18 M6 6 L18 18", // This path describes a close icon (X)
+                                    fill: "none",
+                                    stroke: "#f5f5f5", // Change stroke color as needed
+                                    stroke_width: "2" // Adjust stroke width
+                                }
+                            }
+                        }
+
+                        // Emojis
+                        button {
+                            class: "reaction-picker-item",
+                            onclick: {
+                                move |_|{
+                                    reaction_input.set("👍".to_string());
+                                    handle_send_reaction(Arc::clone(&user()));
+                                }
+                            },
+                            "👍"  // Thumbs up emoji
+                        }
+                        button {
+                            class: "reaction-picker-item",
+                            onclick: move |_| {
+                                reaction_input.set("👎".to_string());
+                                handle_send_reaction(Arc::clone(&user()));
+                            },
+                            "👎"
+                        }
+                        button {
+                            class: "reaction-picker-item",
+                            onclick: move |_| {
+                                reaction_input.set("❤️".to_string());
+                                handle_send_reaction(Arc::clone(&user()));
+                            },
+                            "❤️"
+                        }
+                        button {
+                            class: "reaction-picker-item",
+                            onclick: move |_| {
+                                reaction_input.set("❗".to_string());
+                                handle_send_reaction(Arc::clone(&user()));
+                            },
+                            "❗"
+                        }
+                        button {
+                            class: "reaction-picker-item",
+                            onclick: move |_| {
+                                reaction_input.set("❓".to_string());
+                                handle_send_reaction(Arc::clone(&user()));
+                            },
+                            "❓"
                         }
                     }
                 }
