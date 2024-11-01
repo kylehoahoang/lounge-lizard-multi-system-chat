@@ -62,15 +62,7 @@ pub fn SlackLogin (
                 // Handle the error, possibly exit or retry
             }
         }
-
-        let mongo_lock_copies = client_lock().clone();
         
-        let mongo_client = block_on(
-            async {
-                mongo_lock_copies.lock().await
-            }
-        );
-
         let user_lock_copies = user_lock().clone();
 
         let user = block_on(
@@ -81,54 +73,11 @@ pub fn SlackLogin (
 
         oauth_url.set(user.slack.oauth_url.clone());
         
-         // Clone the client if it exists (since we can't return a reference directly)
-        if let Some(client) = mongo_client.as_ref() {
-            // Convert the function into async and spawn it on the current runtime
-            let client_clone = client.clone();  // Clone the client to avoid ownership issues
-            let user_clone = user.clone();
-            
-            // Use `tokio::spawn` to run the async block
-            block_on(async move {
-                let db = client_clone.database(MONGO_DATABASE);
-                let user_collection = db.collection::<User>(MONGO_COLLECTION);
-                
-                match to_bson(&user_clone.slack) {
-                    Ok(slack_bson) => {
-                        match user_collection
-                            .find_one_and_update(
-                                doc! { 
-                                    "$or": [{"username": &user_clone.username}, 
-                                            {"email": &user_clone.email}] 
-                                },
-                                doc! {
-                                    "$set": { "slack": slack_bson }
-                                }
-                            )
-                            .await 
-                        {
-                            Ok(Some(_)) => {
-                                // Document found and updated
-                                info!("Document updated successfully");
-                            }
-                            Ok(None) => {
-                                // No document matched the filter
-                                warn!("Document not found");
-                            }
-                            Err(e) => {
-                                error!("Something went wrong: {:#?}", e);
-                            }
-                        }
-                    }
-                    Err(e) => {
-                        error!("Failed to convert Slack to BSON: {:#?}", e);
-                    }
-                }
-                
-            });
-
-        } else {
-            warn!("MongoDB client not found in global state.");
-        }
+        block_on(
+            async{
+                update_slack(user.clone(), client_lock().clone()).await;
+            }
+        );
     
     };
 

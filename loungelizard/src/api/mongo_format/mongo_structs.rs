@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use slack_morphism::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct User {
@@ -13,20 +14,14 @@ pub struct User {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Slack {
     pub app_id: String,
-    pub bot: Bot,
     pub client_id: String,
     pub client_secret: String,
     pub config_token: String,
+    pub refresh_token: String,
     pub oauth_url: String,
     pub team: Team,
     pub user: Slack_User,
     pub verif_token: String,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct Bot {
-    pub token: String,
-    pub scope: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -52,6 +47,33 @@ pub struct MSTeams {
     pub token: String,
 }
 
+
+#[derive(Deserialize, Debug)]
+pub struct ResponseData {
+    pub ok: bool,
+    pub token: String,
+    pub refresh_token: String,
+    pub team_id: String,
+    pub user_id: String,
+    pub iat: u64, // issued at time
+    pub exp: u64, // expiration time
+}
+
+// Implement the Default trait for ResponseData
+impl Default for ResponseData {
+    fn default() -> Self {
+        ResponseData {
+            ok: false,
+            token: String::new(),
+            refresh_token: String::new(),
+            team_id: String::new(),
+            user_id: String::new(),
+            iat: 0,
+            exp: 0,
+        }
+    }
+}
+
 // Implement Default for User
 impl Default for User {
     fn default() -> Self {
@@ -71,24 +93,14 @@ impl Default for Slack {
     fn default() -> Self {
         Slack {
             app_id: String::new(),
-            bot: Bot::default(),
             client_id: String::new(),
             client_secret: String::new(),
             config_token: String::new(),
+            refresh_token: String::new(),
             oauth_url: String::new(),
             team: Team::default(),
             user: Slack_User::default(),
             verif_token: String::new(),
-        }
-    }
-}
-
-// Implement Default for Bot
-impl Default for Bot {
-    fn default() -> Self {
-        Bot {
-            token: String::new(),
-            scope: String::new(),
         }
     }
 }
@@ -130,4 +142,17 @@ impl Default for MSTeams {
             token: String::new(),
         }
     }
+}
+
+// ! OAuth Process modified 
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct ModSlackOAuthV2Response {
+    pub access_token: Option<SlackApiTokenValue>,
+    pub token_type: Option<SlackApiTokenType>,
+    pub scope: Option<SlackApiTokenScope>,
+    pub bot_user_id: Option<SlackUserId>,
+    pub app_id: SlackAppId,
+    pub team: SlackTeamInfo,
+    pub authed_user: SlackOAuthV2AuthedUser,
+    pub incoming_webhook: Option<SlackOAuthIncomingWebHook>,
 }
