@@ -1,0 +1,22 @@
+[package]
+name = "ms_teams"
+version = "0.1.0"
+edition = "2018"
+# build = "build.rs"
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1", features = ["full"] }
+webbrowser = "0.5"
+tiny_http = "0.8"
+rand = "0.8"
+sha2 = "0.10"
+base64 = "0.13"
+dotenv = "0.15.0"
+which = "4.4"
+mongodb = "2.0"

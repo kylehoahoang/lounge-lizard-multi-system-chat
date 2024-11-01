@@ -7,10 +7,12 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 use futures::executor::block_on;
 use crate::api::slack::server_utils::setup_server::*;
+use crate::api::ms_teams::ms_teams_app_setup::dummy_token_check;
 use dioxus_logger::tracing::{info, error, warn};
 use mongodb::{sync::Client, bson::doc};
 use bson::to_bson;
 use crate::api::mongo_format::mongo_funcs::*;
+
 
 
 // * Login Page Routing Files
@@ -49,6 +51,9 @@ pub fn Home() -> Element {
 
     // MSTeams Values
     let mut show_teams_login_pane = use_signal(|| false);
+    let mut show_teams_server_pane = use_signal(|| false);
+    let access_token = use_signal(|| "".to_string());
+    let teams_list = use_signal(|| Value::Null);
 
     let mut logged_in = use_signal(|| false);
 
@@ -126,19 +131,19 @@ pub fn Home() -> Element {
         let user = block_on(async {
             user_lock_clone_teams.lock().await
         });
-
-        if user.ms_teams.token == "" {
-            show_teams_login_pane.set(!show_teams_login_pane());
+        if user.ms_teams.token.is_empty() || !block_on(dummy_token_check(&user.ms_teams.token)) {
+            show_teams_login_pane.set(true);
+            show_teams_server_pane.set(false);
 
             // Set Other tokens to false
             show_discord_login_pane.set(false);
             show_slack_login_pane.set(false);
         }
         else {
+            show_teams_server_pane.set(!show_teams_server_pane());
             current_platform.set("MSTeams".to_string());
+            logged_in.set(true);
         }
-       
-        
     };
 
 
@@ -187,7 +192,7 @@ pub fn Home() -> Element {
                 div {
                     class: {
                         format_args!("white-square {}",
-                            if show_teams_login_pane() && logged_in() 
+                            if show_teams_login_pane() || show_teams_server_pane() && logged_in() 
                             { "opaque" } 
                             else 
                             { "transparent" })
@@ -227,7 +232,10 @@ pub fn Home() -> Element {
                     }
                 }
                 else if current_platform().to_string() == "MSTeams" {
-                    MSTeams_p{}
+                    MSTeams_p{
+                        show_teams_server_pane: show_teams_server_pane.clone(),
+                        teams_list: teams_list.clone()
+                    }
                 }
                 else if current_platform().to_string() == "Slack" {
                     Slack_p{current_platform: current_platform.clone()}
@@ -270,7 +278,10 @@ pub fn Home() -> Element {
                     else if show_teams_login_pane() {
                         MSTeamsLogin { 
                             show_teams_login_pane: show_teams_login_pane.clone(),
+                            show_teams_server_pane: show_teams_server_pane.clone(),
                             current_platform: current_platform.clone(),
+                            access_token: access_token.clone(),
+                            teams_list: teams_list.clone(),
                         }
                     }
                     
