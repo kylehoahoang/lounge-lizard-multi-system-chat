@@ -1,4 +1,4 @@
-use reqwest::Client;
+use reqwest::{multipart, Client};
 use reqwest::header::{AUTHORIZATION, HeaderValue};
 use serde_json::Value;
 use std::error::Error;
@@ -106,6 +106,63 @@ pub async fn send_message(token: String, channel_id: String, message: String) ->
     }
 }
 
+// FUNCTION: Sends message to a server channel
+pub async fn send_message_attachment(token: String, channel_id: String, message: String, attachment: Vec<u8>, attachment_name: String) -> Result<Value, Box<dyn Error>> {
+    let client = Client::new();
+    let url = format!("https://discord.com/api/v9/channels/{}/messages", channel_id);
+    let body = serde_json::json!({ "content": message });
+
+    // Create a multipart form with the file content and the message content
+    let form = multipart::Form::new()
+        .text("content", message) // Add the message content as a text part
+        .part(
+            "files[0]", // The name of the part that Discord expects for file attachments
+            multipart::Part::bytes(attachment)
+                .file_name(attachment_name), // Add the file as a multipart part with a file name
+        );
+
+    let response = client
+        .post(&url)
+        .header(AUTHORIZATION, HeaderValue::from_str(&token)?)
+        .multipart(form)
+        .send()
+        .await?;
+
+    if response.status().is_success() {
+        let response_json = response.json().await?;
+        Ok(response_json)
+    } else {
+        Err(format!("Send message request failed with status: {}", response.status()).into())
+    }
+}
+
+// FUNCTION: Sends a reaction to a message in a server channel
+pub async fn send_reaction(token: String, channel_id: String, message_id: String, emoji: String) -> Result<(), Box<dyn Error>> {
+    let client = Client::new();
+    let emoji_clean = strip_quotes(&emoji); // Remove quotes if present
+    let message_id_clean = strip_quotes(&message_id);
+
+    let url = format!(
+        "https://discord.com/api/v9/channels/{}/messages/{}/reactions/{}/@me",
+        channel_id, message_id_clean, emoji_clean
+    );
+    println!("send_reaction received emoji: {}", emoji_clean);
+    println!("url is: {}", url);
+
+    let response = client
+        .put(&url)
+        .header(AUTHORIZATION, HeaderValue::from_str(&token)?)
+        .send()
+        .await?;
+
+    if response.status().is_success() {
+        Ok(())
+    } else {
+        Err(format!("Send reaction request failed with status: {}", response.status()).into())
+    }
+}
+
+
 // FUNCTION: Get messages from a channel
 pub async fn get_messages(token: String, channel_id: String) -> Result<Value, Box<dyn Error>> {
     let client = Client::builder()
@@ -128,4 +185,8 @@ pub async fn get_messages(token: String, channel_id: String) -> Result<Value, Bo
     } else {
         Err(format!("Get messages request failed with status: {}", response.status()).into())
     }
+}
+
+fn strip_quotes(s: &str) -> &str {
+    s.trim_matches('"')
 }
