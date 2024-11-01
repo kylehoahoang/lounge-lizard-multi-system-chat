@@ -66,7 +66,7 @@ fn main() {
     }
 
     let cfg = dioxus::desktop::Config::new()
-        .with_custom_head(r#"<link rel="stylesheet" href="/assets/tailwind.css">"#.to_string());
+    .with_custom_head(r#"<link rel="stylesheet" href="assets/tailwind.css">"#.to_string());
 
     LaunchBuilder::desktop()
         .with_cfg(cfg)
