@@ -87,14 +87,15 @@ pub async fn request_consumer(
 
             
             let mut form_data = HashMap::new();
-            form_data.insert("client_id", user.slack.client_id.as_str());
-            form_data.insert("client_secret", user.slack.client_secret.as_str());
             form_data.insert("code", code.as_str());
             form_data.insert("grant_type", "authorization_code");
 
             let response = 
                 match client_r
                         .post("https://slack.com/api/oauth.v2.access")
+                        .basic_auth(
+                            user.slack.client_id.as_str(),
+                            Some(user.slack.client_secret.as_str()))
                         .header(HOST, "slack.com")
                         .header(CONTENT_TYPE, "application/x-www-form-urlencoded")
                         .form(&form_data)

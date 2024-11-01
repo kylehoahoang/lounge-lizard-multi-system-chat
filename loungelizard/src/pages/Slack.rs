@@ -12,6 +12,7 @@ use slack_morphism::prelude::*;
 use serde_json::Value;
 use std::sync::Arc;
 use tokio::sync::{Mutex, oneshot};
+use std::collections::HashMap;
 struct EmptyStruct {}
 
 
@@ -27,13 +28,16 @@ pub fn Slack(current_platform: Signal<String>,) -> Element {
     let client_lock_new = Arc::clone(&client_lock());
     let user_lock_new = Arc::clone(&user_lock());
 
-    let mut public_channels : Signal<Vec<SlackChannelInfo>> = use_signal(||Vec::new()); 
-    let mut private_channels: Signal<Vec<SlackChannelInfo>> = use_signal(||Vec::new());
-    let mut mpim_channels   : Signal<Vec<SlackChannelInfo>> = use_signal(||Vec::new());  
-    let mut im_channels     : Signal<Vec<SlackChannelInfo>> = use_signal(||Vec::new());
-    let mut event_messages  : Signal<Vec<SlackMessageEvent>>   = use_signal(|| Vec::<SlackMessageEvent>::new());
-    let mut history_list    : Signal<Vec<SlackHistoryMessage>> = use_signal(|| Vec::<SlackHistoryMessage>::new());
-    let mut current_channel : Signal<Option<SlackChannelInfo>> = use_signal(||None);
+    let mut public_channels     : Signal<Vec<SlackChannelInfo>> = use_signal(||Vec::new()); 
+    let mut private_channels    : Signal<Vec<SlackChannelInfo>> = use_signal(||Vec::new());
+    let mut mpim_channels       : Signal<Vec<SlackChannelInfo>> = use_signal(||Vec::new());  
+    let mut im_channels         : Signal<Vec<SlackChannelInfo>> = use_signal(||Vec::new());
+    let mut event_messages      : Signal<HashMap<String, SlackMessageEvent>> = use_signal(||HashMap::<String, SlackMessageEvent>::new());
+    let mut event_messages_vec  : Signal<Vec<String>>   = use_signal(|| Vec::<String>::new());
+    let mut history_list        : Signal<HashMap<String, SlackHistoryMessage>> = use_signal(||HashMap::<String, SlackHistoryMessage>::new());
+    let mut history_list_vec    : Signal<Vec<String>> = use_signal(|| Vec::<String>::new());
+    let mut current_channel     : Signal<Option<SlackChannelInfo>> = use_signal(||None);
+    
 
     let user_lock_install = Arc::clone(&user_lock());
     let user_lock_first_try = Arc::clone(&user_lock());
@@ -126,7 +130,9 @@ pub fn Slack(current_platform: Signal<String>,) -> Element {
                                                                 if let Some(id) = message_event.clone().origin.channel {
                                                                     if current_c.id.eq(&id) {
                                                                         info!("Message Pushed");
-                                                                        event_messages.write().push(message_event);
+                                                                        let message_id = message_event.origin.ts.to_string(); // Adjust based on actual ID field
+                                                                        event_messages_vec.write().push(message_id.clone());
+                                                                        event_messages.write().insert(message_id.clone(), message_event.clone());
                                                                         
                                                                     }
                                                                 }
@@ -140,9 +146,197 @@ pub fn Slack(current_platform: Signal<String>,) -> Element {
                                                 }
                                                 Some("reaction_added") => {
                                                     // Handle reaction added events
+                                                    match serde_json::from_value::<SlackReactionAddedEvent>(event.clone())
+                                                    {
+                                                        Ok(reaction_item) => {
+
+                                                            let user_id = reaction_item.user.clone();
+                                                            let reaction_name = reaction_item.reaction;
+                                                            //let item_user = reaction_item.item_user.clone();
+
+                                                            match reaction_item.item{
+                                                                SlackReactionsItem::Message(message) => {
+                                                                                                                                // Handle message events
+                                                                    info!("->Reaction Added Event Received");
+                                                                    if let Some(current_c) = current_channel() {
+                                                                        
+                                                                        if let Some(id) = message.clone().origin.channel{
+                                                                            if current_c.id.eq(&id) {
+                                                                                
+                                                                                let mut found = false;
+                                                                                
+                                                                                history_list
+                                                                                    .write()
+                                                                                    .entry(message.clone().origin.ts.to_string())
+                                                                                    .and_modify(|new_message| {
+                                                                                        if let Some(new_reactions) = new_message.content.reactions.as_mut() {
+                                                                                            // Now you can modify the reactions vector
+                                                                                            info!("Found in reactions");
+                                                                                            for reaction in new_reactions.iter_mut() {
+                                                                                                if reaction.name == reaction_name {
+                                                                                                    info!("Reaction found");
+                                                                                                    reaction.count += 1;
+                                                                                                    reaction.users.push(user_id.clone());
+                                                                                                    found = true;
+                                                                                                }
+                                                                                            }
+                                                                                            if !found {
+                                                                                                info!("Reaction added");
+                                                                                                new_reactions.push(SlackReaction{
+                                                                                                    name: reaction_name.clone(),
+                                                                                                    count: 1,
+                                                                                                    users: vec![user_id.clone()],
+                                                                                                });
+                                                                                            }
+                                                                                        }
+                                                                                        else {
+                                                                                           info!{"No current vector for reactions, creating one"};
+                                                                                           new_message.content.reactions = Some(vec![SlackReaction{
+                                                                                               name: reaction_name.clone(),
+                                                                                               count: 1,
+                                                                                               users: vec![user_id.clone()],
+                                                                                           }]);
+                                                                                        }
+                                                                                    });
+
+                                                                                if !found  {
+                                                                                    event_messages
+                                                                                        .write()
+                                                                                        .entry(message.clone().origin.ts.to_string())
+                                                                                        .and_modify(|new_message| {
+
+                                                                                            if let Some(content) = new_message.content.as_mut() {
+                                                                                                if let Some(reactions) = content.reactions.as_mut() {
+                                                                                                    // Now you can access the reactions vector
+                                                                                                    for reaction in reactions.iter_mut() {
+                                                                                                        if reaction.name == reaction_name {
+                                                                                                            info!("Reaction found");
+                                                                                                            reaction.count += 1;
+                                                                                                            reaction.users.push(user_id.clone());
+                                                                                                            found = true;
+                                                                                                        }
+                                                                                                    }
+                                                                                                    if !found {
+                                                                                                        info!("Reaction added");
+                                                                                                        reactions.push(SlackReaction{
+                                                                                                            name: reaction_name,
+                                                                                                            count: 1,
+                                                                                                            users: vec![user_id.clone()],
+                                                                                                        });
+                                                                                                    }
+                                                                                                    reactions.retain(|u| u.count != 0); 
+                                                                                                }
+                                                                                                else {
+                                                                                                    info!{"No current vector for reactions, creating one"};
+                                                                                                    content.reactions = Some(vec![SlackReaction{
+                                                                                                        name: reaction_name.clone(),
+                                                                                                        count: 1,
+                                                                                                        users: vec![user_id.clone()],
+                                                                                                    }]);
+                                                                                                }
+
+                                                                                            }
+                                                                                        
+                                                                                        });
+                                                                                }
+                                                                                // Todo Implement the other list 
+                                                                                
+                                                                            }
+                                                                        }
+                                                                    }
+
+                                                                },
+                                                                SlackReactionsItem::File(file)=>{
+
+                                                                }
+                                                            }
+
+                                                        }
+                                                        Err(e) => {
+                                                            error!("Error with Message Event: {:?}", e);
+                                                        }
+
+                                                    }
+                                                    
                                                 }
                                                 Some("reaction_removed") => {
                                                     // Handle reaction added events
+                                                    match serde_json::from_value::<SlackReactionRemovedEvent>(event.clone())
+                                                    {
+                                                        Ok(reaction_item) => {
+
+                                                            let user_id = reaction_item.user.clone();
+                                                            let reaction_name = reaction_item.reaction;
+                                                            //let item_user = reaction_item.item_user.clone();
+
+                                                            match reaction_item.item{
+                                                                SlackReactionsItem::Message(message) => {
+                                                                                                                                // Handle message events
+                                                                    info!("->Reaction Removed Event Received");
+                                                                    if let Some(current_c) = current_channel() {
+                                                                        
+                                                                        if let Some(id) = message.clone().origin.channel{
+                                                                            if current_c.id.eq(&id) {
+                                                                                info!("Reaction Item Found In messages");
+
+                                                                                let mut found = false;
+
+                                                                                history_list
+                                                                                    .write()
+                                                                                    .entry(message.clone().origin.ts.to_string())
+                                                                                    .and_modify(|new_message| {
+                                                                                        if let Some(new_reactions) = new_message.content.reactions.as_mut() {
+                                                                                            // Now you can modify the reactions vector
+                                                                                            for reaction in new_reactions.iter_mut() {
+                                                                                                if reaction.name == reaction_name {
+                                                                                                    reaction.count -= 1;
+                                                                                                    reaction.users.retain(|u| u != &user_id);
+                                                                                                    found = true;
+                                                                                                }
+                                                                                            }
+                                                                                            new_reactions.retain(|u| u.count != 0);  
+                                                                                        }
+                                                                                    });
+
+                                                                                if !found {
+                                                                                    event_messages
+                                                                                        .write()
+                                                                                        .entry(message.clone().origin.ts.to_string())
+                                                                                        .and_modify(|new_message| {
+
+                                                                                            if let Some(content) = new_message.content.as_mut() {
+                                                                                                if let Some(reactions) = content.reactions.as_mut() {
+                                                                                                    // Now you can access the reactions vector
+                                                                                                    for reaction in reactions.iter_mut() {
+                                                                                                        if reaction.name == reaction_name {
+                                                                                                            reaction.count -= 1;
+                                                                                                            reaction.users.retain(|u| u != &user_id);
+                                                                                                        }
+                                                                                                    }
+                                                                                                    reactions.retain(|u| u.count != 0); 
+                                                                                                }
+                                                                                            }
+                                                                                        });
+                                                                                }
+                                                                                
+                                                                                // Todo Implement the other list 
+                                                                                
+                                                                            }
+                                                                        }
+                                                                    }
+
+                                                                },
+                                                                SlackReactionsItem::File(file)=>{
+
+                                                                }
+                                                            }
+
+                                                        }
+                                                        Err(e) => {
+                                                            error!("Error with Message Event: {:?}", e);
+                                                        }
+
+                                                    }
                                                 }
                                                 _ => {
                                                     warn!("Unknown event type: {}", event_type);
@@ -269,11 +463,19 @@ pub fn Slack(current_platform: Signal<String>,) -> Element {
             block_on(
                 async{
                     history_list.write().clear();
+                    history_list_vec.write().clear();
                     if let Some(chan) = current_channel() {
                         let token = lock_temp.lock().await.slack.user.token.clone();
-                        for history_message in get_history_list(token, chan).await {
-                            history_list.write().push(history_message.clone());
-                            //println!("Pushed history message: {:#?}", history_message);
+                        for history_message in get_history_list(token, chan.clone()).await {
+                            let message_id = history_message.origin.ts.to_string(); // Adjust based on actual ID field
+                            let mut moded_hist_mess = history_message;
+                            // ! Include Channel ID and type
+                            moded_hist_mess.origin.channel = Some(
+                                chan.id.clone()
+                            );
+                            history_list.write().insert(message_id.clone(), moded_hist_mess.clone());
+                            history_list_vec.write().push(message_id.clone());
+                            //println!("Pushed history message: {:?}", message_id);
                             
                         }
                         
@@ -298,7 +500,9 @@ pub fn Slack(current_platform: Signal<String>,) -> Element {
                 mpim_channels:      mpim_channels.clone(),
                 im_channels:        im_channels.clone(),
                 event_messages:     event_messages.clone(),
+                event_messages_vec: event_messages_vec.clone(),
                 history_list:       history_list.clone(),
+                history_list_vec:   history_list_vec.clone(),
                 current_channel:    current_channel.clone(),
             }
         }
