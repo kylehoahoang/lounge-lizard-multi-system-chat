@@ -279,6 +279,44 @@ body {
   /* Ensure it's visible */
 }
 
+.teams-bottom-pane {
+  position: fixed;
+  bottom: -100%;
+  left: 100px;
+  width: calc(100% - 110px);
+  height: calc(100% - 10px);
+  background-color: #404a57;
+  transition: bottom 0.5s ease-in-out;
+  z-index: 999;
+  overflow-y: auto;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+.teams-bottom-pane.show {
+  bottom: 0;
+}
+
+/* Team List Styling */
+.team-list {
+  list-style-type: none;
+  padding: 10px;
+}
+.team-button {
+  background-color: #0078d4;
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  margin: 5px 0;
+  width: 100%;
+  text-align: left;
+  border-radius: 10px;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+.team-button:hover {
+  background-color: #005fa3;
+}
+
 .discord-bottom-pane {
   position: fixed;
   bottom: -100%;

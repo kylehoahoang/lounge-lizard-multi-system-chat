@@ -3,37 +3,49 @@ use bson::to_bson;
 use crate::{MONGO_COLLECTION, MONGO_DATABASE};
 
 use crate::api::mongo_format::mongo_structs::*;
+use crate::api::ms_teams::ms_teams_app_setup::start_ms_teams;
 use dioxus_logger::tracing::{info, error, warn};
 use futures::executor::block_on;
+use serde_json::Value;
 use mongodb::{sync::Client, bson::doc};
 
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
+const MS_TEAMS_CLIENT_ID: &str = "51e0dbc4-59a4-4cb4-a020-1b8ef7495470";
 
 #[component]
 pub fn MSTeamsLogin (
     show_teams_login_pane: Signal<bool>,
+    show_teams_server_pane: Signal<bool>,
+    teams_list: Signal<Value>,
     current_platform: Signal<String>,
+    access_token: Signal<String>,
 ) -> Element {
 
    // ! User Mutex Lock to access the user data
    let user_lock = use_context::<Signal<Arc<Mutex<User>>>>();
    let client_lock = use_context::<Signal<Arc<Mutex<Option<Client>>>>>();
    // ! ========================= ! //
-
-    let mut username = use_signal(|| "".to_string());
-    let mut password = use_signal(|| "".to_string());
-
     let mut logged_in = use_signal(|| false);
-    let login_error = use_signal(|| None::<String>);
+    let mut login_error = use_signal(|| None::<String>);
 
     let handle_login = move |_| {
-        let username = username.clone();
-        let password = password.clone();
 
-
-        // TODO: Implement teams login code
+        block_on(async move {
+            match start_ms_teams(MS_TEAMS_CLIENT_ID).await {
+                Ok(token) => {
+                    access_token.set(token);
+                    show_teams_login_pane.set(false);
+                    show_teams_server_pane.set(true);
+                    info!("Login successful");
+                }
+                Err(e) => {
+                    login_error.set(Some(e.to_string()));
+                    info!("Login failed: {}", e);
+                }
+            }
+        });
 
 
         // TODO: ========================
@@ -61,7 +73,7 @@ pub fn MSTeamsLogin (
 
             // TODO Add all tokens to user profile here
             user.ms_teams = MSTeams{
-                token: "test".to_string()
+                token: access_token.to_string()
             };
             
             // Todo ====================================//
@@ -139,19 +151,6 @@ pub fn MSTeamsLogin (
                         stroke_width: "2" // Adjust stroke width
                     }
                 }
-            }
-            input {
-                class: "login-input",
-                value: "{username}",
-                placeholder: "Username/Email",
-                oninput: move |event| username.set(event.value())
-            }
-            input {
-                class: "login-input",
-                r#type: "password",
-                value: "{password}",
-                placeholder: "Password",
-                oninput: move |event| password.set(event.value())
             }
             button { 
                 class: "login-button",
