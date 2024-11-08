@@ -30,13 +30,13 @@ pub async fn login_request(username: String, password: String) -> Result<(String
 }
 
 // FUNCTION: Get user's DM's
-pub async fn get_channels(token: &str) -> Result<Value, Box<dyn Error>> {
+pub async fn get_channels(token: String) -> Result<Value, Box<dyn Error>> {
     let client = Client::new();
     let url = "https://discord.com/api/v9/users/@me/channels";
 
     let response = client
         .get(url)
-        .header(AUTHORIZATION, HeaderValue::from_str(token)?)
+        .header(AUTHORIZATION, HeaderValue::from_str(&token)?)
         .send()
         .await?;
 

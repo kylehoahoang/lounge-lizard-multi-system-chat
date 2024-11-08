@@ -50,34 +50,96 @@ fn DiscordBottomPane(show_discord_server_pane: Signal<bool>, discord_guilds: Sig
     let mut channels = use_signal(|| None::<Value>);
     let mut fetch_error = use_signal(|| None::<String>);
     let mut show_channel_pane = use_signal(|| false);
+    let mut show_dm_channel_pane = use_signal(|| false);
 
     // Fetch the channels for the selected guild
     let handle_get_channels = move |guild_id: String, user_lock_api: Arc<Mutex<User>>| {
         block_on(async move {
-            let user_lock_api = user_lock_api.lock().await;
-            let discord_token = user_lock_api.discord.token.clone();
-            match get_guild_channels(discord_token, guild_id).await {
-                Ok(channels_data) => {
-                    channels.set(Some(channels_data));
-                    show_channel_pane.set(true);
+            // Attempt to acquire the lock without blocking
+            if let Ok(user_lock_api) = user_lock_api.try_lock() {
+                let discord_token = user_lock_api.discord.token.clone();
+                
+                match get_guild_channels(discord_token, guild_id).await {
+                    Ok(channels_data) => {
+                        channels.set(Some(channels_data));
+                        show_channel_pane.set(true);
+                    }
+                    Err(e) => {
+                        fetch_error.set(Some(e.to_string()));
+                        info!("Failed to fetch channels for guild");
+                    }
                 }
-                Err(e) => {
-                    fetch_error.set(Some(e.to_string()));
-                }
+            } else {
+                // Log if the lock could not be acquired
+                info!("Unable to acquire user lock; skipping fetch for guild {}.", guild_id);
             }
         });
     };
+
+    // Fetch the channels IDs for direct messages if clicked
+    let handle_get_dm_channels = move |user_lock_api: Arc<Mutex<User>>| {
+        block_on(async move {
+            // Attempt to acquire the lock without blocking
+            if let Ok(user_lock_api) = user_lock_api.try_lock() {
+                let discord_token = user_lock_api.discord.token.clone();
+                
+                match get_channels(discord_token).await {
+                    Ok(channels_data) => {
+                        channels.set(Some(channels_data));
+                        show_dm_channel_pane.set(true);
+                    }
+                    Err(e) => {
+                        fetch_error.set(Some(e.to_string()));
+                        info!("Failed to fetch channels for guild");
+                    }
+                }
+            } else {
+                // Log if the lock could not be acquired
+                info!("Unable to acquire user lock; skipping fetch for dms.");
+            }
+        });
+    };
+
 
     rsx! {
         div {
             class: {
                 format_args!("discord-bottom-pane {}", if show_discord_server_pane() { "show" } else { "" })
             },
-            h2 { class: "discord-heading", "Discord" }
+            div {
+                // Make the div take up the full width and be clickable
+                style: "width: 100%; cursor: pointer; padding: 10px 20px; text-align: center;",
+                onclick: move |_| { show_discord_server_pane.set(false); },
+                h2 { class: "discord-heading", "Discord" }
+            }
+            button {
+                style: "position: absolute; top: 10px; right: 10px; background-color: transparent; border: none; cursor: pointer;",
+                onclick: move |_| { show_discord_server_pane.set(false);},
+                svg {
+                    xmlns: "http://www.w3.org/2000/svg",
+                    view_box: "0 0 24 24",
+                    width: "24", // Adjust size as needed
+                    height: "24", // Adjust size as needed
+                    path {
+                        d: "M18 6 L6 18 M6 6 L18 18", // This path describes a close icon (X)
+                        fill: "none",
+                        stroke: "#f5f5f5", // Change stroke color as needed
+                        stroke_width: "2" // Adjust stroke width
+                    }
+                }
+            }
             if !discord_guilds().is_null() {
                 // Render the discord_guilds data
                 ul {
                     class: "guild-list",
+                    li {
+                        class: "guild-item",
+                        button {
+                            class: "guild-button",  // You can style this button as you like in CSS
+                            onclick: move |_| handle_get_dm_channels(Arc::clone(&user())) ,
+                            {"Direct Messages"}
+                        }
+                    }
                     for guild in discord_guilds_array {
                         li {
                             class: "guild-item",
@@ -98,6 +160,12 @@ fn DiscordBottomPane(show_discord_server_pane: Signal<bool>, discord_guilds: Sig
                 show_channel_pane: show_channel_pane.clone(),
                 show_discord_server_pane: show_discord_server_pane.clone()
             }
+            DMChannelList {
+                user: user.clone(),
+                channels: channels.clone(),
+                show_channel_pane: show_dm_channel_pane.clone(),
+                show_discord_server_pane: show_discord_server_pane.clone()
+            }
         }
     }
 }
@@ -116,31 +184,43 @@ fn ChannelList(user: Signal<Arc<Mutex<User>>>, channels: Signal<Option<Value>>, 
         let channel_id_clone = channel_id.clone();
 
         block_on(async move {
-            let user_lock_api = user_lock_api.lock().await;
-            let discord_token = user_lock_api.discord.token.clone();
-            match get_messages(discord_token.to_string(), channel_id).await {
-                Ok(messages_data) => {
-                    messages.set(Some(messages_data));
-                    current_channel_id.set(channel_id_clone);
-                    show_channel_messages_pane.set(true);
+            // Attempt to acquire the lock without blocking
+            if let Ok(user_lock_api) = user_lock_api.try_lock() {
+                let discord_token = user_lock_api.discord.token.clone();
+                
+                match get_messages(discord_token.to_string(), channel_id).await {
+                    Ok(messages_data) => {
+                        messages.set(Some(messages_data));
+                        current_channel_id.set(channel_id_clone);
+                        show_channel_messages_pane.set(true);
+                    }
+                    Err(e) => {
+                        fetch_error.set(Some(e.to_string()));
+                        info!("Failed to fetch messages for channel {}: {}", channel_id_clone, e);
+                    }
                 }
-                Err(e) => {
-                    fetch_error.set(Some(e.to_string()));
-                }
+            } else {
+                // Log if the lock could not be acquired
+                info!("Unable to acquire user lock; skipping fetch for channel {}.", channel_id_clone);
             }
         });
-
     };
+
 
     rsx! {
         div {
             class: {
                 format_args!("channel-list-pane {}", if show_channel_pane() && show_discord_server_pane() { "show" } else { "" })
             },
-            h2 { class: "discord-heading", "Channels" }
+            div {
+                // Make the div take up the full width and be clickable
+                style: "width: 100%; cursor: pointer; padding: 10px 20px; text-align: center;",
+                onclick: move |_| { show_channel_pane.set(false); show_channel_messages_pane.set(false);},
+                h2 { class: "discord-heading", "Channels" }
+            }
             button {
                 style: "position: absolute; top: 10px; right: 10px; background-color: transparent; border: none; cursor: pointer;",
-                onclick: move |_| { show_channel_pane.set(false);},
+                onclick: move |_| { show_channel_pane.set(false); show_channel_messages_pane.set(false);},
                 svg {
                     xmlns: "http://www.w3.org/2000/svg",
                     view_box: "0 0 24 24",
@@ -180,6 +260,101 @@ fn ChannelList(user: Signal<Arc<Mutex<User>>>, channels: Signal<Option<Value>>, 
     }
 }
 
+#[component]
+fn DMChannelList(user: Signal<Arc<Mutex<User>>>, channels: Signal<Option<Value>>, show_channel_pane: Signal<bool>, show_discord_server_pane: Signal<bool>) -> Element {
+    let channels_array = channels()?.as_array().unwrap_or(&vec![]).clone();
+    let mut messages = use_signal(|| None::<Value>);
+    let mut fetch_error = use_signal(|| None::<String>);
+    let mut show_dm_channel_messages_pane = use_signal(|| false);
+    let mut current_channel_id = use_signal(|| " ".to_string());
+   
+
+    // Fetch the channels for the selected guild
+    let handle_get_channel_messages = move |channel_id: String, user_lock_api: Arc<Mutex<User>>| {
+        let channel_id_clone = channel_id.clone();
+
+        block_on(async move {
+            // Attempt to acquire the lock without blocking
+            if let Ok(user_lock_api) = user_lock_api.try_lock() {
+                let discord_token = user_lock_api.discord.token.clone();
+                
+                match get_messages(discord_token.to_string(), channel_id).await {
+                    Ok(messages_data) => {
+                        messages.set(Some(messages_data));
+                        current_channel_id.set(channel_id_clone);
+                        show_dm_channel_messages_pane.set(true);
+                    }
+                    Err(e) => {
+                        fetch_error.set(Some(e.to_string()));
+                        info!("Failed to fetch messages for channel {}: {}", channel_id_clone, e);
+                    }
+                }
+            } else {
+                // Log if the lock could not be acquired
+                info!("Unable to acquire user lock; skipping fetch for channel {}.", channel_id_clone);
+            }
+        });
+    };
+
+
+    rsx! {
+        div {
+            class: {
+                format_args!("channel-list-pane {}", if show_channel_pane() && show_discord_server_pane() { "show" } else { "" })
+            },
+            div {
+                // Make the div take up the full width and be clickable
+                style: "width: 100%; cursor: pointer; padding: 10px 20px; text-align: center;",
+                onclick: move |_| { show_channel_pane.set(false); show_dm_channel_messages_pane.set(false);},
+                h2 { class: "discord-heading", "DM Channels" }
+            }
+            button {
+                style: "position: absolute; top: 10px; right: 10px; background-color: transparent; border: none; cursor: pointer;",
+                onclick: move |_| { show_channel_pane.set(false); show_dm_channel_messages_pane.set(false);},
+                svg {
+                    xmlns: "http://www.w3.org/2000/svg",
+                    view_box: "0 0 24 24",
+                    width: "24", // Adjust size as needed
+                    height: "24", // Adjust size as needed
+                    path {
+                        d: "M18 6 L6 18 M6 6 L18 18", // This path describes a close icon (X)
+                        fill: "none",
+                        stroke: "#f5f5f5", // Change stroke color as needed
+                        stroke_width: "2" // Adjust stroke width
+                    }
+                }
+            }
+            if !channels()?.is_null() {
+                ul {
+                    class: "channel-list",
+                    for channel in channels_array {
+                        li {
+                            class: "channel-item",
+                            button {
+                                class: "channel-button",
+                                onclick: move |_| {handle_get_channel_messages(channel["id"].as_str().unwrap().to_string(), Arc::clone(&user()))},
+                                {
+                                    // Use `global_name` if it exists; otherwise, use `username`
+                                    channel["recipients"][0]["global_name"]
+                                        .as_str()
+                                        .unwrap_or_else(|| channel["recipients"][0]["username"].as_str().unwrap_or("Unknown User"))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            ChannelMessages {
+                user: user.clone(),
+                messages: messages.clone(),
+                show_channel_messages_pane: show_dm_channel_messages_pane.clone(),
+                current_channel_id: current_channel_id,
+                show_discord_server_pane: show_discord_server_pane.clone()
+            }
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 struct EmptyStruct {} // Empty struct to use for coroutines (when you don't need to send anything into the coroutine)
 
@@ -195,125 +370,148 @@ fn ChannelMessages(user: Signal<Arc<Mutex<User>>>, messages: Signal<Option<Value
 
     let handle_send_message = move |user_lock_api: Arc<Mutex<User>>| {
         block_on(async move {
-            let user_lock_api = user_lock_api.lock().await;
-            let discord_token = user_lock_api.discord.token.clone();
-            
-            // Check if the attachment_input contains data
-            if !attachment_input.is_empty() {
-                // Attachment exists, send message with attachment
-                match send_message_attachment(
-                    discord_token.to_string(),
-                    current_channel_id.to_string(),
-                    message_input.to_string(),
-                    attachment_input(),
-                    attachment_name.to_string()
-                ).await {
-                    Ok(_send_response) => {
-                        info!("Message with attachment sent successfully");
+            // Attempt to acquire the lock without blocking.
+            if let Ok(user_lock_api) = user_lock_api.try_lock() {
+                let discord_token = user_lock_api.discord.token.clone();
+    
+                // Check if the attachment_input contains data
+                if !attachment_input.is_empty() {
+                    // Attachment exists, send message with attachment
+                    match send_message_attachment(
+                        discord_token.to_string(),
+                        current_channel_id.to_string(),
+                        message_input.to_string(),
+                        attachment_input(),
+                        attachment_name.to_string(),
+                    )
+                    .await
+                    {
+                        Ok(_send_response) => {
+                            info!("Message with attachment sent successfully");
+                        }
+                        Err(e) => {
+                            send_error.set(Some(e.to_string()));
+                            info!("Message with attachment send failed: {}", e);
+                        }
+                    }
+                } else {
+                    // No attachment, send a text message
+                    match send_message(
+                        discord_token.to_string(),
+                        current_channel_id.to_string(),
+                        message_input.to_string(),
+                    )
+                    .await
+                    {
+                        Ok(_send_response) => {
+                            info!("Message sent successfully");
+                        }
+                        Err(e) => {
+                            send_error.set(Some(e.to_string()));
+                            info!("Message send failed: {}", e);
+                        }
+                    }
+                }
+    
+                // Fetch messages regardless of success or failure in sending the message
+                match get_messages(discord_token.to_string(), current_channel_id.to_string()).await {
+                    Ok(send_response) => {
+                        messages.set(Some(send_response));
+                        info!("Messages update successful");
                     }
                     Err(e) => {
                         send_error.set(Some(e.to_string()));
-                        info!("Message with attachment send failed: {}", e);
+                        info!("Messages update failed: {}", e);
                     }
                 }
+    
+                // Clear the attachment input and name after sending the message
+                attachment_input.set(Vec::new()); // Assuming attachment_input is a Vec<u8> signal
+                attachment_name.set(String::new()); // Assuming attachment_name is a String signal
             } else {
-                // No attachment, send a text message
-                match send_message(
+                // Handle the case where the lock could not be acquired
+                info!("Failed to acquire user lock; skipping message send.");
+            }
+        });
+    };
+    
+
+    let handle_send_reaction = move |user_lock_api: Arc<Mutex<User>>| {
+        block_on(async move {
+            // Attempt to acquire the lock without blocking.
+            if let Ok(user_lock_api) = user_lock_api.try_lock() {
+                let discord_token = user_lock_api.discord.token.clone();
+                println!("reaction from handler is: {}", reaction_input.to_string());
+    
+                // Send a reaction
+                match send_reaction(
                     discord_token.to_string(),
                     current_channel_id.to_string(),
-                    message_input.to_string()
-                ).await {
+                    message_id_input.to_string(),
+                    reaction_input.to_string(),
+                )
+                .await
+                {
                     Ok(_send_response) => {
-                        info!("Message sent successfully");
+                        info!("Reaction sent successfully");
                     }
                     Err(e) => {
                         send_error.set(Some(e.to_string()));
                         info!("Message send failed: {}", e);
                     }
                 }
-            }
-
-            
     
-            // Fetch messages regardless of success or failure in sending the message
-            match get_messages(discord_token.to_string(), current_channel_id.to_string()).await {
-                Ok(send_response) => {
-                    messages.set(Some(send_response));
-                    info!("Messages update successful");
+                // Fetch messages regardless of success or failure in sending the message
+                match get_messages(discord_token.to_string(), current_channel_id.to_string()).await {
+                    Ok(send_response) => {
+                        messages.set(Some(send_response));
+                        info!("Messages update successful");
+                    }
+                    Err(e) => {
+                        send_error.set(Some(e.to_string()));
+                        info!("Messages update failed: {}", e);
+                    }
                 }
-                Err(e) => {
-                    send_error.set(Some(e.to_string()));
-                    info!("Messages update failed: {}", e);
-                }
+    
+                // Clear emoji and message ID after sending reaction and fetching messages
+                reaction_input.set(String::new());
+                message_id_input.set(String::new());
+            } else {
+                // Handle the case where the lock could not be acquired
+                info!("Failed to acquire user lock; skipping reaction send.");
             }
-
-            // Clear the attachment input and name after sending the message
-            attachment_input.set(Vec::new()); // Assuming attachment_input is a Vec<u8> signal
-            attachment_name.set(String::new()); // Assuming attachment_name is a String signal
         });
     };
-
-    let handle_send_reaction =  move |user_lock_api: Arc<Mutex<User>>| {
-        block_on(async move {
-            let binding = user_lock_api.clone();
-            let user_lock_api = binding.lock().await;
-            let discord_token = user_lock_api.discord.token.clone();
-            println!("reaction from handler is: {}", reaction_input.to_string());
-            
-
-            // Send a reaction
-            match send_reaction(
-                discord_token.to_string(),
-                current_channel_id.to_string(),
-                message_id_input.to_string(),
-                reaction_input.to_string()
-            ).await {
-                Ok(_send_response) => {
-                    info!("Reaction sent successfully");
-                }
-                Err(e) => {
-                    send_error.set(Some(e.to_string()));
-                    info!("Message send failed: {}", e);
-                }
-            }
     
-            // Fetch messages regardless of success or failure in sending the message
-            match get_messages(discord_token.to_string(), current_channel_id.to_string()).await {
-                Ok(send_response) => {
-                    messages.set(Some(send_response));
-                    info!("Messages update successful");
-                }
-                Err(e) => {
-                    send_error.set(Some(e.to_string()));
-                    info!("Messages update failed: {}", e);
-                }
-            }
-
-            reaction_input.set(String::new()); // Clear emoji and message id
-            message_id_input.set(String::new());
-        });
-    };
 
     // Coroutine for fetching messages periodically
-    let _fetch_messages = use_coroutine::<EmptyStruct,_,_>(|_rx| {
+    let _fetch_messages = use_coroutine::<EmptyStruct, _, _>(|_rx| {
+        let user_lock_api = user_lock_api.clone();
+        let current_channel_id = current_channel_id.clone();
+        let mut messages = messages.clone();
+
         async move {
             loop {
                 // Wait for 5 seconds before fetching new messages
                 tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
 
-                // Fetch updated messages
-                let user_lock_api = user_lock_api.lock().await;
-                let discord_token = user_lock_api.discord.token.clone();
-                let discord_token_clone = discord_token.to_owned();
-                let current_channel_id_clone = current_channel_id.to_owned();
-                let mut messages_clone = messages.to_owned();
-
-                match get_messages(discord_token_clone.to_string(), current_channel_id_clone.to_string()).await {
-                    Ok(updated_messages) => {
-                        messages_clone.set(Some(updated_messages)); // Update messages with the latest data
-                    }
-                    Err(e) => {
-                        info!("Failed to fetch updated messages: {}", e);
+                if show_channel_messages_pane() && show_discord_server_pane() {
+                    // Attempt to acquire the lock without blocking
+                    if let Ok(user_lock_api) = user_lock_api.try_lock() {
+                        let discord_token = user_lock_api.discord.token.clone();
+                        
+                        match get_messages(discord_token.to_string(), current_channel_id.to_string()).await {
+                            Ok(updated_messages) => {
+                                messages.set(Some(updated_messages)); // Update messages with the latest data
+                                info!("Messages updated successfully.");
+                            }
+                            Err(e) => {
+                                info!("Failed to fetch updated messages: {}", e);
+                            }
+                        }
+                    } else {
+                        // Log if the lock could not be acquired
+                        info!("Unable to acquire user lock; skipping message fetch for this cycle.");
                     }
                 }
             }
@@ -322,15 +520,19 @@ fn ChannelMessages(user: Signal<Arc<Mutex<User>>>, messages: Signal<Option<Value
 
 
 
+
     rsx! {
         div {
             class: {
                 format_args!("channel-messages-list-pane {}", if show_channel_messages_pane() && show_discord_server_pane() { "show" } else { "" })
             },
-            h2 {
-                class: "discord-heading",
-                "Messages"
+            div {
+                // Make the div take up the full width and be clickable
+                style: "width: 100%; cursor: pointer; padding: 10px 20px; text-align: center;",
+                onclick: move |_| { show_channel_messages_pane.set(false); },
+                h2 {class: "discord-heading", "Messages"}
             }
+            
             button {
                 style: "position: absolute; top: 10px; right: 10px; background-color: transparent; border: none; cursor: pointer;",
                 onclick: move |_| { show_channel_messages_pane.set(false);},
