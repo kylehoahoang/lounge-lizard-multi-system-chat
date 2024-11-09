@@ -50,7 +50,9 @@ fn DiscordBottomPane(show_discord_server_pane: Signal<bool>, discord_guilds: Sig
     let mut channels = use_signal(|| None::<Value>);
     let mut fetch_error = use_signal(|| None::<String>);
     let mut show_channel_pane = use_signal(|| false);
+    let mut show_channel_messages_pane = use_signal(|| false);
     let mut show_dm_channel_pane = use_signal(|| false);
+    let mut show_dm_channel_messages_pane = use_signal(|| false);
 
     // Fetch the channels for the selected guild
     let handle_get_channels = move |guild_id: String, user_lock_api: Arc<Mutex<User>>| {
@@ -109,7 +111,20 @@ fn DiscordBottomPane(show_discord_server_pane: Signal<bool>, discord_guilds: Sig
             div {
                 // Make the div take up the full width and be clickable
                 style: "width: 100%; cursor: pointer; padding: 10px 20px; text-align: center;",
-                onclick: move |_| { show_discord_server_pane.set(false); },
+                onclick: move |_| { 
+                    if show_channel_pane() {
+                        show_channel_pane.set(false);
+                        show_channel_messages_pane.set(false);
+                    }
+                    else if show_dm_channel_pane() {
+                        show_dm_channel_pane.set(false);
+                        show_dm_channel_messages_pane.set(false);
+                    }
+                    else {
+                        show_discord_server_pane.set(false); 
+                    }
+                   
+                },
                 h2 { class: "discord-heading", "Discord" }
             }
             button {
@@ -158,24 +173,25 @@ fn DiscordBottomPane(show_discord_server_pane: Signal<bool>, discord_guilds: Sig
                 user: user.clone(),
                 channels: channels.clone(),
                 show_channel_pane: show_channel_pane.clone(),
-                show_discord_server_pane: show_discord_server_pane.clone()
+                show_discord_server_pane: show_discord_server_pane.clone(),
+                show_channel_messages_pane: show_channel_messages_pane.clone()
             }
             DMChannelList {
                 user: user.clone(),
                 channels: channels.clone(),
                 show_channel_pane: show_dm_channel_pane.clone(),
-                show_discord_server_pane: show_discord_server_pane.clone()
+                show_discord_server_pane: show_discord_server_pane.clone(),
+                show_dm_channel_messages_pane: show_dm_channel_messages_pane.clone()
             }
         }
     }
 }
 
 #[component]
-fn ChannelList(user: Signal<Arc<Mutex<User>>>, channels: Signal<Option<Value>>, show_channel_pane: Signal<bool>, show_discord_server_pane: Signal<bool>) -> Element {
+fn ChannelList(user: Signal<Arc<Mutex<User>>>, channels: Signal<Option<Value>>, show_channel_pane: Signal<bool>, show_discord_server_pane: Signal<bool>, show_channel_messages_pane: Signal<bool>) -> Element {
     let channels_array = channels()?.as_array().unwrap_or(&vec![]).clone();
     let mut messages = use_signal(|| None::<Value>);
     let mut fetch_error = use_signal(|| None::<String>);
-    let mut show_channel_messages_pane = use_signal(|| false);
     let mut current_channel_id = use_signal(|| " ".to_string());
    
 
@@ -215,7 +231,15 @@ fn ChannelList(user: Signal<Arc<Mutex<User>>>, channels: Signal<Option<Value>>, 
             div {
                 // Make the div take up the full width and be clickable
                 style: "width: 100%; cursor: pointer; padding: 10px 20px; text-align: center;",
-                onclick: move |_| { show_channel_pane.set(false); show_channel_messages_pane.set(false);},
+                onclick: move |_| { 
+                    if show_channel_messages_pane() {
+                        show_channel_messages_pane.set(false);
+                    }
+                    else {
+                        show_channel_pane.set(false); 
+                        show_channel_messages_pane.set(false);
+                    }
+                },
                 h2 { class: "discord-heading", "Channels" }
             }
             button {
@@ -261,11 +285,10 @@ fn ChannelList(user: Signal<Arc<Mutex<User>>>, channels: Signal<Option<Value>>, 
 }
 
 #[component]
-fn DMChannelList(user: Signal<Arc<Mutex<User>>>, channels: Signal<Option<Value>>, show_channel_pane: Signal<bool>, show_discord_server_pane: Signal<bool>) -> Element {
+fn DMChannelList(user: Signal<Arc<Mutex<User>>>, channels: Signal<Option<Value>>, show_channel_pane: Signal<bool>, show_discord_server_pane: Signal<bool>, show_dm_channel_messages_pane: Signal<bool>) -> Element {
     let channels_array = channels()?.as_array().unwrap_or(&vec![]).clone();
     let mut messages = use_signal(|| None::<Value>);
     let mut fetch_error = use_signal(|| None::<String>);
-    let mut show_dm_channel_messages_pane = use_signal(|| false);
     let mut current_channel_id = use_signal(|| " ".to_string());
    
 
@@ -305,7 +328,15 @@ fn DMChannelList(user: Signal<Arc<Mutex<User>>>, channels: Signal<Option<Value>>
             div {
                 // Make the div take up the full width and be clickable
                 style: "width: 100%; cursor: pointer; padding: 10px 20px; text-align: center;",
-                onclick: move |_| { show_channel_pane.set(false); show_dm_channel_messages_pane.set(false);},
+                onclick: move |_| { 
+                    if show_dm_channel_messages_pane() {
+                        show_dm_channel_messages_pane.set(false);
+                    }
+                    else {
+                        show_channel_pane.set(false); 
+                        show_dm_channel_messages_pane.set(false);
+                    }
+                },
                 h2 { class: "discord-heading", "DM Channels" }
             }
             button {
