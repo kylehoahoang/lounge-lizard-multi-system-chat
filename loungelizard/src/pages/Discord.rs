@@ -365,10 +365,16 @@ fn DMChannelList(user: Signal<Arc<Mutex<User>>>, channels: Signal<Option<Value>>
                                 class: "channel-button",
                                 onclick: move |_| {handle_get_channel_messages(channel["id"].as_str().unwrap().to_string(), Arc::clone(&user()))},
                                 {
-                                    // Use `global_name` if it exists; otherwise, use `username`
-                                    channel["recipients"][0]["global_name"]
-                                        .as_str()
-                                        .unwrap_or_else(|| channel["recipients"][0]["username"].as_str().unwrap_or("Unknown User"))
+                                    let mut display = "".to_string();
+                                    // Iterate through each recipient and join their usernames
+                                    let recipients = channel["recipients"].as_array().unwrap();
+                                    let mut usernames: Vec<String> = recipients.iter()
+                                        .map(|recipient| recipient["username"].as_str().unwrap_or("Unknown User").to_string())
+                                        .collect();
+                                    if let Some(name) = channel["name"].as_str() {
+                                        display = display + name + " | ";
+                                    }
+                                    display + &usernames.join(", ")
                                 }
                             }
                         }
