@@ -3,6 +3,16 @@ use reqwest::header::{AUTHORIZATION, HeaderValue};
 use serde_json::Value;
 use std::error::Error;
 use std::time::Duration;
+use serde::Deserialize;
+use std::process::{Command, Stdio};
+use tokio::time::sleep;
+use futures_util::{StreamExt, SinkExt}; // Add these for split and send
+use tokio_tungstenite::tungstenite::protocol::Message; // Correct tungstenite import
+use serde_json::json;
+use serde::ser::StdError;
+use tokio_tungstenite::connect_async;
+use std::process::Child; // To manage the child process
+
 
 // FUNCTION: Sends login to Discord and returns auth token and user id
 pub async fn login_request(username: String, password: String) -> Result<(String, String), Box<dyn Error>> {
@@ -189,4 +199,115 @@ pub async fn get_messages(token: String, channel_id: String) -> Result<Value, Bo
 
 fn strip_quotes(s: &str) -> &str {
     s.trim_matches('"')
+}
+
+#[derive(Deserialize)]
+struct Tab {
+    id: String,
+    webSocketDebuggerUrl: String,
+}
+
+pub async fn launch_chrome_and_monitor_auth() -> Result<Option<String>, Box<dyn StdError>> {
+    // Step 1: Specify the path to your existing Chrome profile
+    let start_url = "https://discord.com/login";
+
+    // Step 2: Open Chrome with remote debugging enabled and use the existing profile
+    let chrome_path = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+    let user_data_dir = r"C:\TempProfile"; // Path to the newly copied Chrome profile
+
+    // Launch Chrome with remote debugging enabled
+    let mut command = Command::new(chrome_path)
+    .arg(format!("--user-data-dir={}", user_data_dir))
+    .arg("--remote-debugging-port=9222")
+    .arg("--new-instance") // Ensure Chrome opens a new window
+    .arg("--no-first-run")
+    .arg("--no-default-browser-check") // Skip default browser prompt
+    .arg("--disable-extensions") // Optional: Disable extensions
+    //.arg("--incognito")
+    .arg(start_url)
+    .stdout(Stdio::piped())
+    .stderr(Stdio::null())
+    .spawn();
+
+    let mut chrome_process: Option<Child> = match command {
+        Ok(child) => Some(child),
+        Err(e) => {
+            eprintln!("Failed to start Chrome: {}", e);
+            return Ok(None);
+        }
+    };
+
+    // Wait for Chrome to start
+    println!("Waiting for Chrome to start...");
+    sleep(Duration::from_secs(2)).await; // Wait 2 seconds for Chrome to fully start
+
+    // Query the debugging endpoint to get the WebSocket debugger URL
+    let url = "http://localhost:9222/json";
+    let client = Client::new();
+    let response = client.get(url).send().await?;
+
+    if response.status().is_success() {
+        let tabs: Vec<Tab> = response.json().await?;
+        if let Some(tab) = tabs.first() {
+            let websocket_url = &tab.webSocketDebuggerUrl;
+            println!("WebSocket Debugger URL: {}", websocket_url);
+
+            // Now, monitor the network traffic and capture the authorization header
+            let (ws_stream, _) = connect_async(websocket_url).await?;
+            let (mut write, mut read) = ws_stream.split();
+
+            // Enable Network domain in CDP
+            let enable_network = json!({
+                "id": 1,
+                "method": "Network.enable",
+            });
+            write.send(Message::Text(enable_network.to_string())).await?;
+            println!("Sent Network.enable command");
+
+            // Monitor WebSocket messages for the authorization header
+            while let Some(msg) = read.next().await {
+                match msg {
+                    Ok(Message::Text(text)) => {
+                        let parsed: serde_json::Value = match serde_json::from_str(&text) {
+                            Ok(parsed) => parsed,
+                            Err(e) => {
+                                eprintln!("Failed to parse WebSocket message: {}", e);
+                                continue;
+                            }
+                        };
+                        
+                        // Log all received messages for debugging
+                        println!("Received message: {}", serde_json::to_string_pretty(&parsed).unwrap());
+        
+                        // Check for 'Network.requestWillBeSent' or 'Network.responseReceived' methods
+                        if let Some(method) = parsed["method"].as_str() {
+                            if method == "Network.responseReceived" || method == "Network.requestWillBeSent" {
+                                if let Some(params) = parsed["params"].as_object() {
+                                    // Handle response data safely by checking the key existence
+                                    if let Some(request) = params.get("request") {
+                                        if let Some(headers) = request.get("headers").and_then(|h| h.as_object()) {
+                                            if let Some(auth_header) = headers.get("Authorization") {
+                                                println!("Authorization Header Found: {}", auth_header);
+                                                let token = auth_header.as_str().unwrap_or_default().to_string();
+                                                // Close the Chrome window and end the program
+                                                if let Some(mut process) = chrome_process.take() {
+                                                    process.kill().expect("Failed to kill Chrome process");
+                                                    println!("Chrome window closed.");
+                                                }
+                                                return Ok(Some(token));  // Return the captured token
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    Err(e) => eprintln!("Error reading WebSocket message: {}", e),
+                    _ => {}
+                }
+            }
+        }
+    }
+
+    Err("Failed to retrieve the WebSocket URL or capture authorization header.".into())
 }

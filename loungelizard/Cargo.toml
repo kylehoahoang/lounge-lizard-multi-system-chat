@@ -29,6 +29,9 @@ regex = "1.11.0"
 bson = "2.13.0"
 phf = { version = "0.10", features = ["macros"] }
 
+# Discord
+tokio-tungstenite = "0.15"
+
 # Slack Specific
 # openssl = { version = "0.10", features = ["vendored"] }
 slack-morphism = {version = "2.1", features = ["hyper", "axum"]}
