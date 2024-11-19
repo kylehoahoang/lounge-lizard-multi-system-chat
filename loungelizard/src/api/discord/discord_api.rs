@@ -12,6 +12,8 @@ use serde_json::json;
 use serde::ser::StdError;
 use tokio_tungstenite::connect_async;
 use std::process::Child; // To manage the child process
+use std::path::PathBuf;
+use std::fs;
 
 
 // FUNCTION: Sends login to Discord and returns auth token and user id
@@ -213,17 +215,25 @@ pub async fn launch_chrome_and_monitor_auth() -> Result<Option<String>, Box<dyn 
 
     // Step 2: Open Chrome with remote debugging enabled and use the existing profile
     let chrome_path = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
-    let user_data_dir = r"C:\TempProfile"; // Path to the newly copied Chrome profile
+    //let user_data_dir = r"C:\TempProfile"; // Path to the newly copied Chrome profile
+    let user_data_dir = std::env::current_dir()
+        .map(|path| path.join("resources").join("TempProfile"))
+        .unwrap_or_else(|_| PathBuf::from("resources/TempProfile"));
+
+    // Convert to a string for passing to the command
+    let user_data_dir_str = user_data_dir.to_str().unwrap_or_else(|| {
+        panic!("Failed to convert user_data_dir to a string");
+    });
 
     // Launch Chrome with remote debugging enabled
     let mut command = Command::new(chrome_path)
-    .arg(format!("--user-data-dir={}", user_data_dir))
+    .arg(format!("--user-data-dir={}", user_data_dir_str))
     .arg("--remote-debugging-port=9222")
     .arg("--new-instance") // Ensure Chrome opens a new window
     .arg("--no-first-run")
     .arg("--no-default-browser-check") // Skip default browser prompt
     .arg("--disable-extensions") // Optional: Disable extensions
-    //.arg("--incognito")
+    .arg("--incognito")
     .arg(start_url)
     .stdout(Stdio::piped())
     .stderr(Stdio::null())

@@ -1,0 +1,5 @@
+.ó’äü 2º
+Ytype.googleapis.com/google.internal.chrome.optimizationguide.v1.SegmentationModelMetadataÜ 0R$"*time_since_last_modified_secR" *time_since_last_active_secR'%*time_active_for_time_period_secR*num_times_activeR*local_tab_countR*session_tab_countR*visit_countR*is_bookmarkedR*	is_pinnedR*is_in_tab_groupR*is_in_clusterR*has_url_keyed_imageR*
+has_app_idR*platform_typeR*seen_count_last_dayR *activated_count_last_dayR *dismissed_count_last_dayR*seen_count_last_7_daysR#!*activated_count_last_7_daysR#!*dismissed_count_last_7_daysR*seen_count_last_30_daysR$"*activated_count_last_30_daysR$"*dismissed_count_last_30_days‚!
+*
+url_visit_resumption_rankerH

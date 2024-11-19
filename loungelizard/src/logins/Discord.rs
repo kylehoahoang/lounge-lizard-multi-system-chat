@@ -289,7 +289,7 @@ pub fn DiscordLogin(
             }
             button { 
                 class: "login-button",
-                onclick: handle_browser_login, "Browser Login" 
+                onclick: handle_browser_login, "Browser Login (Requires Chrome)" 
             }
 
             // TODO: provide custom error warnings
