@@ -31,9 +31,9 @@ const NGROK_TUNNEL_SEARCH: &str = "http://127.0.0.1:4040/api/tunnels";
 
 pub async fn start_ms_teams(ms_teams_client_id: &str) -> Result<String, Box<dyn Error>> {
 
-    let port = "8000";
+    let port = "8080";
     
-    let _ = start_ngrok(&port).await;
+    //let _ = start_ngrok(&port).await;
     let redirect_uri = fetch_ngrok_tunnel().await?;
     let _ = update_manifest_uri(ms_teams_client_id, &redirect_uri).await;
         

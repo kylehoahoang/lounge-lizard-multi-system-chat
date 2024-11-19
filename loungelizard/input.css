@@ -679,8 +679,8 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 40px;
-  width: 40px;
+  height: 25px;
+  width: 25px;
   background-color: transparent; /* Default background color */
   border-radius: 50%;
   cursor: pointer;
