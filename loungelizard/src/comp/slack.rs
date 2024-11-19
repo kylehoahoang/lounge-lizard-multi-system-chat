@@ -772,7 +772,7 @@ pub fn CustomMessageComponent(
                                                 ",
                                         textarea{
                                             // Style for the textarea used for editing
-                                            style: "width: 500px;
+                                            style: "width: 100%;
                                                     min-height: 50px;
                                                     padding: 10px;
                                                     font-size: 15px;
