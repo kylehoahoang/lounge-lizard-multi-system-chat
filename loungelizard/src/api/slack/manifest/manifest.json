@@ -1,12 +1,6 @@
 {
     "display_information": {
-        "name": "LoungeLizard_Beta"
-    },
-    "features": {
-        "bot_user": {
-            "display_name": "LoungeLizard_Beta",
-            "always_online": false
-        }
+        "name": "LoungeLizard"
     },
     "oauth_config": {
         "redirect_urls": [
@@ -23,6 +17,7 @@
                 "dnd:write",
                 "emoji:read",
                 "files:read",
+                "files:write",
                 "groups:history",
                 "groups:read",
                 "im:history",
@@ -39,9 +34,6 @@
                 "team:read",
                 "usergroups:read",
                 "users:read"
-            ],
-            "bot": [
-                "users:write"
             ]
         }
     },

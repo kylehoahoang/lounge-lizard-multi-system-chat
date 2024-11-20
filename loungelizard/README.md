@@ -7,6 +7,11 @@
 ```bash
 npx tailwindcss -i ./input.css -o ./assets/tailwind.css --watch
 ```
+4. Install MicroSoft Azure CLI 
+https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-windows?tabs=azure-cli
+
+5. Install Ngrok 
+
 
 Run the following command in the root of the project to start the Dioxus dev server:
 

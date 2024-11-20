@@ -8,7 +8,11 @@ use tokio::sync::Mutex;
 use futures::executor::block_on;
 use crate::api::slack::server_utils::setup_server::*;
 use crate::api::ms_teams::ms_teams_app_setup::dummy_token_check;
-use dioxus_logger::tracing::error;
+use dioxus_logger::tracing::{info, error, warn};
+use mongodb::{sync::Client, bson::doc};
+use bson::to_bson;
+use crate::api::mongo_format::mongo_funcs::*;
+
 
 
 // * Login Page Routing Files
@@ -28,6 +32,7 @@ use crate::api::mongo_format::mongo_structs::*;
 pub fn Home() -> Element {
    // ! User Mutex Lock to access the user data
    let user_lock = use_context::<Signal<Arc<Mutex<User>>>>();
+   let client_lock = use_context::<Signal<Arc<Mutex<Option<Client>>>>>();
    // ! ========================= ! //
 
    let user_lock_clone_slack = Arc::clone(&user_lock());
@@ -78,7 +83,7 @@ pub fn Home() -> Element {
 
     let handle_slack_click = move |_| {
 
-        let user = block_on(async {
+        let mut user: tokio::sync::MutexGuard<'_, User> = block_on(async {
             user_lock_clone_slack.lock().await
         });
 
@@ -94,15 +99,27 @@ pub fn Home() -> Element {
         else if current_platform().to_string() != "Slack" {
 
             let result = block_on( async {
-                update_slack_app(user.clone()).await
+                update_slack_app(user.clone()).await   
             });
 
             match result {
-                Ok(_) => {
+                Ok(new_token_body) => {
+                    if new_token_body.ok{
+                        user.slack.config_token = new_token_body.token;
+                        user.slack.refresh_token = new_token_body.refresh_token;
+                        // TODO Implement Refreshing after 12 hours
+
+                        block_on(
+                            async{
+                                update_slack(user.clone(), client_lock().clone()).await;
+                            }
+                        );
+                    }
+                    
                     current_platform.set("Slack".to_string());
                 },
-                Err(_) => {
-                    error!("Failed to Initialize Ngrok Server");
+                Err(err) => {
+                    error!("Failed: {}", err);
                 }
             }
         }

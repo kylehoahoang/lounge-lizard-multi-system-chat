@@ -32,10 +32,12 @@ const NGROK_PORT: &str = "8080";
     Returns: The access token used to interact with ms teams (String)
 */
 
+
 pub async fn start_ms_teams(ms_teams_client_id: &str) -> Result<(String, String, String), Box<dyn Error>> {
     
     // Start ngrok if necessary and update the manifest, wait some time to ensure the update
     let redirect_uri = start_ngrok().await?;
+
     let _ = update_manifest_uri(ms_teams_client_id, &redirect_uri).await;
 
     // Create a PCKE pair for verification, get authorization, and request an access token
