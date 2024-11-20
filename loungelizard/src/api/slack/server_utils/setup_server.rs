@@ -194,36 +194,85 @@ pub async fn update_slack_app(
 
 pub async fn create_slack_app(
     user_lock: Arc<Mutex<User>>,
-    config_token: String,
+    refresh_token: String,
 ) -> Result<(), Box<dyn std::error::Error>> 
 {
     let mut user = user_lock.lock().await; 
     
-    let config_token = match config_token.starts_with("xoxe.xoxp") {
+    let refresh_token = match refresh_token.starts_with("xoxe.xoxp") {
         true => {
-            // If the token starts with the correct prefix, continue without changing anything
-            config_token
+            // Ensure Token is not an access token
+            return Err("Refresh Token needed".into());
         },
         false => {
             // If the token does not start with the correct prefix, return an error
-            match config_token.as_str() {
-                "\n" => {
-                    // If the token is empty, return an error
-                    return Err("Nothing in Clipboard".into());
-                },
-                _ => {
-                    // If the token is empty, return an error
-                    return Err("Incorrect token".into());
+            match refresh_token.starts_with("xoxe"){
+                // Return Access token if it starts with xoxe
+                true => {refresh_token},
+                false => {
+                    match refresh_token.as_str() {
+                        "\n" => {
+                            // If the token is empty, return an error
+                            return Err("Nothing in Clipboard".into());
+                        },
+                        _ => {
+                            // If the token is empty, return an error
+                            return Err("Incorrect token".into());
+                    }
+                    }
                 }
-            }
+            } 
+            
         }
     };
+    let mut form_data = HashMap::new();
+    form_data.insert("refresh_token", refresh_token.as_str());
+
+    let client_r = ReqwestClient::new();
+
+    let response = 
+        match client_r
+                .post("https://slack.com/api/tooling.tokens.rotate")
+                .header(HOST, "slack.com")
+                .header(CONTENT_TYPE, "application/x-www-form-urlencoded")
+                .form(&form_data)
+                .send()
+                .await
+        {
+            Ok(response) => response,
+            Err(err) => {
+                warn!("Error Encountered {}", err);
+                return Err(Box::new(err) as Box<dyn std::error::Error>);
+            }
+        };
+
+    let mut response_data_exp: ResponseData = ResponseData::default();
+    let mut new_access_token = String::new(); 
+    // Check if response is successful
+    if response.status().is_success() {
+        // Try to print the raw response before parsing
+        let raw_body = response.text().await?;
+
+        // Attempt to parse the response body as JSON
+        match serde_json::from_str::<ResponseData>(&raw_body) {
+            Ok(response_data) => {
+                new_access_token = response_data.token;
+                // Attempt to parse the response body as JSON
+                response_data_exp = serde_json::from_str(&raw_body)?;
+            }
+            Err(e) => {
+                error!("Failed to parse JSON: {}", e);
+            }
+        }
+    } else {
+        println!("Failed to get a successful response. Status: {}", response.status());
+    }
 
     // Create a new Slack client 
     let client  = SlackClient::new(SlackClientHyperConnector::new().expect("failed to create hyper connector"));
 
     // Create a new token using config_token
-    let token: SlackApiToken = SlackApiToken::new(config_token.clone().into());
+    let token: SlackApiToken = SlackApiToken::new(new_access_token.clone().into());
 
     // Create a new session with the client and the token
     let session = client.open_session(&token);
@@ -250,7 +299,8 @@ pub async fn create_slack_app(
             user.slack.client_secret = response.credentials.client_secret.to_string();
             user.slack.verif_token = response.credentials.verification_token.to_string();
             user.slack.oauth_url = response.oauth_authorize_url.to_string();
-            user.slack.config_token = config_token;
+            user.slack.config_token = new_access_token;
+            user.slack.refresh_token = refresh_token;
             Ok(())
         }
         Err(err) => Err(Box::new(err) as Box<dyn std::error::Error>),
