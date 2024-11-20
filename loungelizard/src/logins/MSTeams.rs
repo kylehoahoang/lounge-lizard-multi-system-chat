@@ -6,7 +6,6 @@ use crate::api::mongo_format::mongo_structs::*;
 use crate::api::ms_teams::ms_teams_app_setup::start_ms_teams;
 use dioxus_logger::tracing::{info, error, warn};
 use futures::executor::block_on;
-use serde_json::Value;
 use mongodb::{sync::Client, bson::doc};
 
 use std::sync::Arc;
@@ -18,9 +17,10 @@ const MS_TEAMS_CLIENT_ID: &str = "51e0dbc4-59a4-4cb4-a020-1b8ef7495470";
 pub fn MSTeamsLogin (
     show_teams_login_pane: Signal<bool>,
     show_teams_server_pane: Signal<bool>,
-    teams_list: Signal<Value>,
     current_platform: Signal<String>,
     access_token: Signal<String>,
+    refresh_token: Signal<String>,
+    expiration: Signal<String>
 ) -> Element {
 
    // ! User Mutex Lock to access the user data
@@ -35,7 +35,9 @@ pub fn MSTeamsLogin (
         block_on(async move {
             match start_ms_teams(MS_TEAMS_CLIENT_ID).await {
                 Ok(token) => {
-                    access_token.set(token);
+                    access_token.set(token.0);
+                    refresh_token.set(token.1);
+                    expiration.set(token.2);
                     show_teams_login_pane.set(false);
                     show_teams_server_pane.set(true);
                     info!("Login successful");
@@ -73,7 +75,10 @@ pub fn MSTeamsLogin (
 
             // TODO Add all tokens to user profile here
             user.ms_teams = MSTeams{
-                token: access_token.to_string()
+                access_token: access_token.to_string(),
+                refresh_token: refresh_token.to_string(),
+                expiration: expiration.to_string()
+
             };
             
             // Todo ====================================//
@@ -81,7 +86,7 @@ pub fn MSTeamsLogin (
             let user_clone = user.clone();
             
             // Use `tokio::spawn` to run the async block
-            block_on(async move {
+            spawn(async move {
                 let db = client_clone.database(MONGO_DATABASE);
                 let user_collection = db.collection::<User>(MONGO_COLLECTION);
                 
