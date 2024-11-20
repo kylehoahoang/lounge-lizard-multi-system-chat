@@ -48,7 +48,8 @@ pub fn Home() -> Element {
     let mut show_teams_login_pane = use_signal(|| false);
     let mut show_teams_server_pane = use_signal(|| false);
     let access_token = use_signal(|| "".to_string());
-    let teams_list = use_signal(|| Value::Null);
+    let refresh_token = use_signal(|| "".to_string());
+    let expiration = use_signal(|| "".to_string());
 
     let mut logged_in = use_signal(|| false);
 
@@ -114,7 +115,7 @@ pub fn Home() -> Element {
         let user = block_on(async {
             user_lock_clone_teams.lock().await
         });
-        if user.ms_teams.token.is_empty() || !block_on(dummy_token_check(&user.ms_teams.token)) {
+        if user.ms_teams.access_token.is_empty() || !block_on(dummy_token_check(&user.ms_teams.access_token)) {
             show_teams_login_pane.set(true);
             show_teams_server_pane.set(false);
 
@@ -216,8 +217,7 @@ pub fn Home() -> Element {
                 }
                 else if current_platform().to_string() == "MSTeams" {
                     MSTeams_p{
-                        show_teams_server_pane: show_teams_server_pane.clone(),
-                        teams_list: teams_list.clone()
+                        show_teams_server_pane: show_teams_server_pane.clone()
                     }
                 }
                 else if current_platform().to_string() == "Slack" {
@@ -264,7 +264,8 @@ pub fn Home() -> Element {
                             show_teams_server_pane: show_teams_server_pane.clone(),
                             current_platform: current_platform.clone(),
                             access_token: access_token.clone(),
-                            teams_list: teams_list.clone(),
+                            refresh_token: refresh_token.clone(),
+                            expiration: expiration.clone(),
                         }
                     }
                     

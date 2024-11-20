@@ -47,6 +47,7 @@ rand = "0.8"
 sha2 = "0.10"
 base64 = "0.13"
 which = "4.4"
+ammonia = "3.1"
 
 [dependencies.mongodb]
 version = "3.1.0"

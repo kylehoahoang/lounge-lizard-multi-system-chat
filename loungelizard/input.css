@@ -543,3 +543,401 @@ body {
   background-color: #45a049;
   /* Darker green on hover */
 }
+
+
+/* MS TEAMS NEW UI ELEMENTS */
+
+.ms-teams-main-container {
+  position: fixed;
+  display: flex;
+  width: calc(100vw - 100px);
+  height: 100vh;
+  left: 100px;
+}
+
+/* MS Teams Teams Objects*/
+.ms-teams-left-sidebar {
+  background-color: #79c142; /* Green color */
+  width: 80px; /* Adjust the width as needed */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.ms-teams-user-icon-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+
+/* MS Teams Emoji Objects */
+.ms-teams-emoji-button {
+  background-color: transparent;
+  font-size: 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.ms-teams-emoji-list {
+  position: absolute;
+  bottom: 60px;
+  right: 20px;
+  background-color: #333;
+  padding: 10px;
+  border-radius: 8px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  z-index: 1000;
+}
+
+.ms-teams-emoji {
+  font-size: 20px;
+  cursor: pointer;
+  padding: 5px;
+  transition: transform 0.1s ease;
+}
+
+.ms-teams-emoji:hover {
+  transform: scale(1.2);
+}
+
+
+/* MS Teams Message Objects */
+.ms-teams-right-panel {
+  background-color: #3a3d41; /* Slightly lighter grey */
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px;
+  color: white;
+}
+
+.ms-teams-message-list {
+  display: flex;
+  flex-direction: column-reverse;
+  list-style-type: none;
+  overflow-y: auto;
+  padding: 10px;
+  max-height: calc(100% - 80px);
+  margin-bottom: 20px;
+  align-items: stretch;
+}
+
+.ms-teams-post-container {
+  background-color: #444;
+  color: #fff;
+  padding: 20px;
+  width: 100%;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  box-sizing: border-box;
+}
+
+.ms-teams-message, .ms-teams-reply {
+  padding: 10px;
+}
+
+.ms-teams-message-time {
+  font-size: 0.8em;
+  color: #ccc;
+}
+
+.ms-teams-subject {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.ms-teams-content p {
+  margin: 4px 0;
+  border-bottom: 1px solid #333;
+}
+
+/* MS Teams User Objects */
+.ms-teams-user-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.ms-teams-user-picture {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #bbb;
+  margin-right: 10px;
+}
+
+.ms-teams-user-info {
+  font-weight: bold;
+  margin-right: auto;
+}
+
+/* MS Teams Reaction Objects */
+.ms-teams-reactions {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.ms-teams-reaction-list {
+  display: flex;
+  gap: 8px;
+  font-size: 0.8em;
+  margin-right: 8px;
+}
+
+.ms-teams-reaction-button {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #aaa;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+.ms-teams-post-divider {
+  border-top: 2px solid #666;
+  margin: 10px 0;
+}
+
+.ms-teams-reaction-item {
+  display: flex;
+  align-items: center;
+  background-color: #f0f0f0;
+  border-radius: 12px;
+  padding: 4px 8px;
+  font-size: 14px;
+  color: #333;
+}
+
+.ms-teams-reaction-count {
+  margin-left: 4px;
+  font-weight: bold;
+  color: #555;
+}
+
+/* MS Teams Reply Objects */
+.ms-teams-user-info-reply {
+  font-size: 0.8em;
+  font-weight: bold;
+  margin-right: auto;
+}
+
+.ms-teams-message-time-reply {
+  font-size: 0.6em;
+  color: #ccc;
+  margin-left: auto;
+}
+
+.ms-teams-content-reply p {
+  font-size: 0.8em;
+  margin: 2px 0;
+}
+
+.ms-teams-reply-button {
+  background-color: #79c142;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.ms-teams-reply-input-container {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.ms-teams-reply-input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-right: 8px;
+  color: black;
+}
+
+.ms-teams-reply-send-button {
+  background-color: #79c142; /* Green color for the send reply button */
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.ms-teams-reply-emoji-button {
+  background-color: transparent;
+  font-size: 24px;
+  border: none;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+/* MS Teams Message Objects */
+.ms-teams-message-system-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* was flex-start */
+  gap: 8px;
+  width: 100%;
+  position: relative;
+}
+
+.ms-teams-message-container {
+  width: 100%;
+}
+
+.ms-teams-message-input-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ms-teams-message-action-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.ms-teams-message-input {
+  flex: 1; /* Take up most of the space */
+  padding: 8px;
+  border: 1px soild #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  color: black;
+}
+
+.ms-teams-send-button {
+  background-color: #79c142; /* Green color for the send button */
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* MS Teams Subject Objects */
+.ms-teams-subject-toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  position: relative;
+}
+
+.ms-teams-subject-toggle-label {
+  font-size: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  white-space: nowrap;
+  gap: 3px;
+}
+
+.ms-teams-subject-input-container {
+  margin-bottom: 5px;
+  width: 100%;
+}
+
+.ms-teams-subject-input {
+  width: calc(25vw - 16px);
+  padding: 8px;
+  font-size: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  color: black;
+}
+
+/* MS Teams Icon Objects */
+.ms-teams-team-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  width: 60px; /* Icon size */
+  margin: 10px;
+  font-size: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease; /* Smooth hover effects */
+}
+
+.ms-teams-team-icon img {
+  width: 60px; /* Profile picture size */
+  height: 60px;
+  border-radius: 50%; /* Make the image circular */
+  object-fit: cover; /* Keep the image aspect ratio */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Add subtle shadow */
+}
+
+.ms-teams-team-icon span {
+  font-size: 12px; /* Smaller text for team names */
+  margin-top: 8px; /* Space between the image and the text */
+  color: #ffffff; /* White text for better contrast */
+}
+
+.ms-teams-team-icon:hover {
+  transform: scale(1.1); /* Slight zoom effect on hover */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Enhance shadow on hover */
+}
+
+.ms-teams-team-icon.active {
+  transform: scale(1.1); /* Keep the hover zoom */
+  background-color: rgba(100,100,100,0.3);
+  border-radius: 8px;
+}
+
+/* MS Teams Channel Objects */
+.ms-teams-middle-panel {
+  background-color: #2c2f33; /* Dark grey color */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 200px;
+  padding: 20px;
+  color: white;
+}
+
+h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.ms-teams-channel-list {
+  max-height: 400px; /* Limit height for large lists */
+  overflow-y: auto; /* Scroll if content exceeds height */
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.ms-teams-channel-item {
+  display: block; /* Channels are stacked vertically */
+  padding: 6px 10px; /* Space inside each channel */
+  margin: 2px 0; /* Space between channels */
+  border-radius: 4px; /* Slightly rounded corners */
+  cursor: pointer; /* Indicate clickable element */
+  font-size: 14px; /* Text size */
+  color: #fff; /* Default white text */
+  text-decoration: none; /* Remove underline */
+  transition: background-color 0.2s ease; /* Smooth hover and active transitions */
+}
+
+.ms-teams-channel-item:hover {
+  background-color: rgba(255, 255, 255, 0.1); /* Light overlay effect on hover */
+}
+
+.ms-teams-channel-item.active {
+  background-color: #79c142; /* Bright green background for active */
+  color: #fff; /* White text for contrast */
+}

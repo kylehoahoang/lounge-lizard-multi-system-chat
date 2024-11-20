@@ -49,7 +49,9 @@ pub struct Discord {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct MSTeams {
-    pub token: String,
+    pub access_token: String,
+    pub refresh_token: String,
+    pub expiration: String,
 }
 
 // Implement Default for User
@@ -127,7 +129,9 @@ impl Default for Discord {
 impl Default for MSTeams {
     fn default() -> Self {
         MSTeams {
-            token: String::new(),
+            access_token: String::new(),
+            refresh_token: String::new(),
+            expiration: String::new()
         }
     }
 }
