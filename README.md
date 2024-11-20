@@ -1,9 +1,10 @@
 # Lounge Lizard Multi Chat
 
-- Slint UI
+- Dioxus Labs
 
-- Discord
+- Discord -> All Relevant information is in the Slack Lizard Folder
 
 - Slack-> All Relevant information is in the Slack Lizard Folder
 
-- Microsoft Teams
+- Microsoft Teams -> All Relevant information is in the Slack Lizard Folder
+
